@@ -7,9 +7,6 @@ modules = [
 ]
 def install_modules(modules):
 	consent = MODS
-
-
-
 	for module in modules:
 		try:
 			__import__(module)
@@ -138,7 +135,7 @@ class Game:
 		self.heart_surf = pygame.image.load('./graphics/other/heart.png').convert_alpha()
 
 	def display_win(self):
-		Highscore_text = 'You Win!'
+		Highscore_text = 'You Escaped!'
 		text_surf = self.font.render(Highscore_text, True, (255, 0, 0))
 		text_rect = text_surf.get_rect(midbottom = (WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2))
 		self.display_surface.blit(text_surf, text_rect)

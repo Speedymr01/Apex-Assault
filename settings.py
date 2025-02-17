@@ -16,8 +16,8 @@ MUSIC_VOLUME = 1
 DIFFICULTY = 1
 
 # Please consent to the required Modules being installed below by changing MODS to True 
-MODS = None
+MODS = True
 # Please agree to the T's and C's below with a True or False
-AGREE = False
+AGREE = True
 
 # Any damage to your computer is utterly your problem and the creator of this game takes no responsibility

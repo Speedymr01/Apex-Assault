@@ -13,7 +13,7 @@ class Player(Entity):
         self.health = 3
         self.reloading = False
         self.reload_start_time = 0
-        self.reload_duration = 4500  # 4.5 seconds
+        self.reload_duration = 750
         self.ammo = 6
         self.reload_sound = pygame.mixer.Sound('sound/reload.mp3')
         self.score = 0
@@ -30,14 +30,18 @@ class Player(Entity):
                 if file.endswith('.png'):
                     animation_name = file.split('.')[0]  # Extracting animation name
                     image = pygame.image.load(os.path.join(root, file)).convert_alpha()
+                    image = pygame.transform.scale(image, (int(image.get_width() * 2), 
+                                                           int(image.get_height() * 2)))  # Scale the image by 1.5
                     frames = self.extract_frames(image)  # Extract frames
                     animations[animation_name] = frames
         return animations
 
     def extract_frames(self, image):
-        """Extracts individual frames from a sprite sheet (192x48 px, 4 frames)."""
+        """Extracts individual frames from a sprite sheet and scales them."""
         frames = []
         frame_width, frame_height = 48, 48  # Each frame is 48x48 pixels
+        frame_width = int(frame_width * 2)
+        frame_height = int(frame_height * 2)
         num_frames = image.get_width() // frame_width  # Number of frames in sheet
         
         for i in range(num_frames):

@@ -14,6 +14,7 @@ class Entity(pygame.sprite.Sprite):
 
         self.image = self.animations[self.status][self.frame_index]    
         self.rect = self.image.get_rect(center = pos)
+        self.scale_factor = 1.5
 
         self.pos = vector(self.rect.center)
         self.direction = vector()
