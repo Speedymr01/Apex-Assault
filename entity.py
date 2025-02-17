@@ -20,7 +20,7 @@ class Entity(pygame.sprite.Sprite):
         self.speed = 500
 
         # collision
-        self.hitbox = self.rect.inflate(-self.rect.width * 0.5,-self.rect.height / 1.5)
+        self.hitbox = self.rect.inflate(-self.rect.width * 0.5,1)
         self.collision_sprites = collision_sprites
         self.mask = pygame.mask.from_surface(self.image)
 
