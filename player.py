@@ -23,26 +23,27 @@ class Player(Entity):
         self.frame_index = 0
         self.status = 'Idle'
 
+        # Load right image
+        self.right_image = pygame.image.load('./graphics/player/right.png').convert_alpha()
+
     def import_assets(self, path):
         animations = {}
         for root, _, files in os.walk(path):
             for file in files:
                 if file.endswith('.png'):
-                    animation_name = file.split('.')[0]  # Extracting animation name
+                    animation_name = file.split('.')[0]
                     image = pygame.image.load(os.path.join(root, file)).convert_alpha()
-                    image = pygame.transform.scale(image, (int(image.get_width() * 2), 
-                                                           int(image.get_height() * 2)))  # Scale the image by 1.5
-                    frames = self.extract_frames(image)  # Extract frames
+                    image = pygame.transform.scale(image, (int(image.get_width() * 2), int(image.get_height() * 2))) 
+                    frames = self.extract_frames(image)
                     animations[animation_name] = frames
         return animations
 
     def extract_frames(self, image):
-        """Extracts individual frames from a sprite sheet and scales them."""
         frames = []
-        frame_width, frame_height = 48, 48  # Each frame is 48x48 pixels
+        frame_width, frame_height = 48, 48
         frame_width = int(frame_width * 2)
         frame_height = int(frame_height * 2)
-        num_frames = image.get_width() // frame_width  # Number of frames in sheet
+        num_frames = image.get_width() // frame_width
         
         for i in range(num_frames):
             frame = image.subsurface((i * frame_width, 0, frame_width, frame_height))
@@ -50,13 +51,10 @@ class Player(Entity):
         return frames
 
     def get_status(self):
-        # idle
         if self.direction.x == 0 and self.direction.y == 0:
             self.status = 'Idle'
-        # attack
         if self.attacking:
             self.status = 'Attack'
-        # walking
         elif self.direction.magnitude() > 0:
             self.status = 'Walk'
 
@@ -81,8 +79,8 @@ class Player(Entity):
                 self.direction.y = 0
             if keys[pygame.K_r]:
                 self.reload()
-            if keys[pygame.K_SPACE]:
-                if self.ammo > 0:
+            if pygame.mouse.get_pressed()[0]:
+                if self.ammo > 0 and not self.reloading:
                     self.attacking = True
                     self.direction = vector()
                     self.frame_index = 0
@@ -90,20 +88,29 @@ class Player(Entity):
                     self.ammo -= 1
 
     def animate(self, dt):
-        """Animates the player using the correct frame sequence."""
         current_animation = self.animations.get(self.status, [self.image])
         
-        self.frame_index += 7 * dt  # Adjust speed of animation
+        self.frame_index += 7 * dt
         if int(self.frame_index) >= len(current_animation):
-            self.frame_index = 0  # Loop animation
+            self.frame_index = 0
             if self.attacking:
-                self.attacking = False  # Reset attack state after animation
+                self.attacking = False
         
-        self.image = current_animation[int(self.frame_index)]  # Set current frame
+        self.image = current_animation[int(self.frame_index)]
         self.mask = pygame.mask.from_surface(self.image)
 
+        # Calculate angle to mouse
+        mouse_direction = self.get_mouse_direction()
+        angle = mouse_direction.angle_to(vector(1, 0))
+
+        # Rotate right image
+        rotated_right_image = pygame.transform.rotate(self.right_image, -angle)
+
+        # Blit rotated right image at specified coordinates
+        self.image.blit(rotated_right_image, (self.image.get_width() / 2 - rotated_right_image.get_width() / 2, self.image.get_height() / 2 - rotated_right_image.get_height() / 2))
+
     def reload(self):
-        if self.ammo == 0 and not self.reloading:
+        if self.ammo < 6 and not self.reloading:
             self.reloading = True
             self.reload_start_time = pygame.time.get_ticks()
             self.reload_sound.play()
@@ -112,6 +119,14 @@ class Player(Entity):
         if self.health <= 0:
             pygame.quit()
             sys.exit()
+
+    def get_mouse_direction(self):
+        mouse_pos = vector(pygame.mouse.get_pos())
+        player_pos = vector(self.rect.center)
+        if mouse_pos == player_pos:
+            return vector()
+        direction = (mouse_pos - player_pos).normalize()
+        return direction
 
     def update(self, dt):
         if self.reloading:

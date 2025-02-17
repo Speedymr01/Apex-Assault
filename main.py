@@ -59,7 +59,7 @@ class Game:
 		self.display_surface = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
 		pygame.display.set_caption('Western shooter')
 		self.clock = pygame.time.Clock()
-		self.bullet_surf = pygame.image.load('graphics/other/particle.png').convert_alpha()
+		self.bullet_surf = pygame.image.load('graphics/other/bullet.png').convert_alpha()
 
 		# Groups
 		self.all_sprites = Allsprites()
