@@ -17,7 +17,7 @@ class Entity(pygame.sprite.Sprite):
 
         self.pos = vector(self.rect.center)
         self.direction = vector()
-        self.speed = 500
+        self.speed = 250
 
         # collision
         self.hitbox = self.rect.inflate(-self.rect.width * 0.5,1)

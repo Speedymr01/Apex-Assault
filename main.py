@@ -1,24 +1,26 @@
 import os
-
+from settings import MODS
+import sys
 modules = [
     'pygame',
 	'pytmx'
 ]
 def install_modules(modules):
-	print('This Game requires the following modules:')
-	print('1: Pygame (Supports main game operation )')
-	print('2: Pytmx (Supports main graphics)')
-	if input('Please enter "yes" to consent to these modules being installed on your system (If they are not already): ').lower() == 'yes':
-		consent = True
-	else:
-		consent = False
+	consent = MODS
+
 
 
 	for module in modules:
 		try:
 			__import__(module)
 		except ImportError:
-			if consent:
+			if consent == None:
+				print('This Game requires the following modules:')
+				print('1: Pygame (Supports main game operation )')
+				print('2: Pytmx (Supports main graphics)')
+				print('Please consent to these being installed in the settings.py file')
+				sys.exit(1)
+			if consent == True:
 				command = f"py -m pip install {module}"
 				os.system(command)
 				print(f"{module} installed successfully.")
