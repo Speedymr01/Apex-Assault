@@ -1,3 +1,32 @@
+import os
+
+modules = [
+    'pygame',
+	'pytmx'
+]
+def install_modules(modules):
+	print('This Game requires the following modules:')
+	print('1: Pygame (Supports main game operation )')
+	print('2: Pytmx (Supports main graphics)')
+	if input('Please enter "yes" to consent to these modules being installed on your system (If they are not already): ').lower() == 'yes':
+		consent = True
+	else:
+		consent = False
+
+
+	for module in modules:
+		try:
+			__import__(module)
+		except ImportError:
+			if consent:
+				command = f"py -m pip install {module}"
+				os.system(command)
+				print(f"{module} installed successfully.")
+install_modules(modules)
+
+
+
+
 import pygame, sys
 from settings import * 
 from player import Player
@@ -42,9 +71,9 @@ class Game:
 
 		self.setup()
 		self.font = pygame.font.Font('./font/subatomic.ttf', 50)
-		self.music = pygame.mixer.Sound('./sound/music.mp3')
-		self.music.set_volume(MUSIC_VOLUME)
-		self.music.play(loops = -1)
+		#self.music = pygame.mixer.Sound('./sound/music.mp3')
+		#self.music.set_volume(MUSIC_VOLUME)
+		#self.music.play(loops = -1)
 
 	def create_bullet(self, pos, direction):
 		Bullet(pos, direction, self.bullet_surf, [self.all_sprites, self.bullets])
@@ -83,13 +112,13 @@ class Game:
 
 	def setup(self):
 		tmx_map = load_pygame('./data/map.tmx')
-		for x, y, surf in tmx_map.get_layer_by_name('fence').tiles():
-			Sprite((x * 64,y * 64), surf, [self.all_sprites, self.obstacles])
-		for x, y, surf in tmx_map.get_layer_by_name('fence2').tiles():
-			Sprite((x * 64,y * 64), surf, [self.all_sprites, self.obstacles])
+		for x, y, surf in tmx_map.get_layer_by_name('Walls').tiles():
+			Sprite((x * 32,y * 32), surf, [self.all_sprites, self.obstacles])
+		for x, y, surf in tmx_map.get_layer_by_name('Pistons').tiles():
+			Sprite((x * 32,y * 32), surf, [self.all_sprites, self.obstacles])
 
-		for obj in tmx_map.get_layer_by_name('Object'):
-			Sprite((obj.x, obj.y), obj.image, [self.all_sprites, self.obstacles])
+#		for obj in tmx_map.get_layer_by_name('Object'):
+#			Sprite((obj.x, obj.y), obj.image, [self.all_sprites, self.obstacles])
 
 		for obj in tmx_map.get_layer_by_name('Entities'):
 			if obj.name == 'Player':

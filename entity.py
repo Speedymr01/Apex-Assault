@@ -8,9 +8,9 @@ class Entity(pygame.sprite.Sprite):
     def __init__(self, pos, groups, path, collision_sprites):
         super().__init__(groups)
 
-        self.import_assets(path)
+        self.animations = self.import_assets(path)
         self.frame_index = 0
-        self.status = 'down'
+        self.status = 'Idle'
 
         self.image = self.animations[self.status][self.frame_index]    
         self.rect = self.image.get_rect(center = pos)
@@ -36,9 +36,9 @@ class Entity(pygame.sprite.Sprite):
         self.hit_time = None
         self.score = 0
 
-        self.hit_sound = pygame.mixer.Sound('./sound/coffin_hit.mp3')
+        self.hit_sound = pygame.mixer.Sound('./sound/ouch.mp3')
         self.hit_sound.set_volume(DAMAGE_SOUND_VOLUME)
-        self.shoot_sound = pygame.mixer.Sound('./sound/bullet.wav')
+        self.shoot_sound = pygame.mixer.Sound('./sound/shoot.mp3')
         self.shoot_sound.set_volume(SHOOT_SOUND_VOLUME)
     
     def blink(self):
@@ -64,8 +64,6 @@ class Entity(pygame.sprite.Sprite):
             if not self.coffin_damage:
                 self.hit_sound.stop()
                 self.hit_sound.play()
-    
-
 
     def vulnerability_timer(self):
         if not self.is_vulnerable:
@@ -87,25 +85,25 @@ class Entity(pygame.sprite.Sprite):
                     key = folder[0].split('\\')[1]
                     self.animations[key].append(surf)
 
-    def move(self,dt):
+    def move(self, dt):
         # Normalize
         if self.direction.magnitude() != 0: self.direction = self.direction.normalize()
 
-        # Horizantal
+        # Horizontal
         self.pos.x += self.direction.x *self.speed * dt
         self.hitbox.centerx = round(self.pos.x)
         self.rect.centerx = self.hitbox.centerx
-        self.collision('horizantal')
+        self.collision('horizontal')
         # Vertical
         self.pos.y += self.direction.y *self.speed * dt
         self.hitbox.centery = round(self.pos.y)
         self.rect.centery = self.hitbox.centery
         self.collision('vertical')
 
-    def collision(self,direction):
+    def collision(self, direction):
         for sprite in self.collision_sprites.sprites():
             if sprite.hitbox.colliderect(self.hitbox):
-                if direction == 'horizantal':
+                if direction == 'horizontal':
                     if self.direction.x > 0: # moving right 
                         self.hitbox.right = sprite.hitbox.left
                     if self.direction.x < 0: # moving left
@@ -120,16 +118,3 @@ class Entity(pygame.sprite.Sprite):
                         self.hitbox.top = sprite.hitbox.bottom
                     self.rect.centery = self.hitbox.centery
                     self.pos.y = self.hitbox.centery
-
-
-
-
-
-
-
-
-
-
-
-
-
