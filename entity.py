@@ -29,7 +29,7 @@ class Entity(pygame.sprite.Sprite):
         self.attacking = False
         self.attack_frame = 2
         self.coffin_damage = False
-        self.ammo = 6
+        self.ammo = AMMO
 
         # health
         self.health = 3

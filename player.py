@@ -14,7 +14,7 @@ class Player(Entity):
         self.reloading = False
         self.reload_start_time = 0
         self.reload_duration = 750
-        self.ammo = 6
+        self.ammo = AMMO
         self.reload_sound = pygame.mixer.Sound('sound/reload.mp3')
         self.score = 0
         self.display_surf = display_surf
@@ -40,6 +40,9 @@ class Player(Entity):
 
         # Attribute to store fixed effect position
         self.effect_pos = None
+
+        # Attribute to store mouse position when attacking starts
+        self.stored_mouse_pos = vector()
 
     def import_assets(self, path):
         animations = {}
@@ -121,6 +124,8 @@ class Player(Entity):
                     # Store effect position relative to the player's initial position
                     self.effect_pos = self.rect.center + self.get_shoot_effect_position(self.get_mouse_direction())
                     self.effect_angle = -self.get_mouse_direction().angle_to(vector(1, 0))
+                    # Store mouse position when attack starts
+                    self.stored_mouse_pos = vector(pygame.mouse.get_pos())
 
     def animate(self, dt):
         current_animation = self.animations.get(self.status, [self.image])
@@ -165,14 +170,17 @@ class Player(Entity):
         rotated_image = pygame.transform.rotate(enlarged_image, -angle)
 
         # Position the arrow image a little away from the player
-        arrow_pos = vector(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2) + (mouse_direction * 50)
+        if self.attacking:
+            arrow_pos = vector(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2) + (mouse_direction * 200)
+        else:
+            arrow_pos = vector(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2) + (mouse_direction * 50)
 
         # Get rect and draw player image
         arrow_rect = rotated_image.get_rect(center=arrow_pos)
         screen.blit(rotated_image, arrow_rect.topleft)
 
     def reload(self):
-        if self.ammo < 6 and not self.reloading:
+        if self.ammo < AMMO and not self.reloading:
             self.reloading = True
             self.reload_start_time = pygame.time.get_ticks()
             self.reload_sound.play()
@@ -183,7 +191,12 @@ class Player(Entity):
             sys.exit()
 
     def get_mouse_direction(self):
-        mouse_pos = vector(pygame.mouse.get_pos())  # Get mouse position
+        if self.attacking:
+            # Use stored mouse position when attacking
+            mouse_pos = self.stored_mouse_pos
+        else:
+            mouse_pos = vector(pygame.mouse.get_pos())  # Get mouse position
+
         player_pos = vector(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2)  # Player is always at window center
 
         if mouse_pos == player_pos:
@@ -197,7 +210,7 @@ class Player(Entity):
             elapsed_time = pygame.time.get_ticks() - self.reload_start_time
             if elapsed_time >= self.reload_duration:
                 self.reloading = False
-                self.ammo = 6
+                self.ammo = AMMO
         
         self.get_status()
         self.input()

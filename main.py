@@ -94,7 +94,7 @@ class Game:
 			self.player.damage()
 
 	def ammo_display(self):
-		Highscore_text = f'{self.player.ammo}/6'
+		Highscore_text = f'{self.player.ammo}/{AMMO}'
 		text_surf = self.font.render(Highscore_text, True, (255, 255, 255))
 		text_rect = text_surf.get_rect(midbottom = (WINDOW_WIDTH / 4 * 3, WINDOW_HEIGHT - 50))
 		self.display_surface.blit(text_surf, text_rect)

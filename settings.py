@@ -6,6 +6,8 @@ PATHS = {
 	'coffin': './graphics/monster/coffin',
 	'cactus': './graphics/monster/cactus'
 }
+AMMO = 20
+
 
 # Edit Below
 # Sounds are a value between 0 and 1
