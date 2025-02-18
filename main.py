@@ -43,8 +43,8 @@ class Allsprites(pygame.sprite.Group):
 		self.bg = pygame.image.load('./graphics/other/map.png').convert()
 	
 	def customize_draw(self, player):
-		self.offset.x = player.rect.centerx - WINDOW_WIDTH / 2
-		self.offset.y = player.rect.centery - WINDOW_HEIGHT / 2
+		self.offset.x = player.rect.centerx - WINDOW_WIDTH / 2 - 25
+		self.offset.y = player.rect.centery - WINDOW_HEIGHT / 2 + 15
 
 
 		self.display_surface.blit(self.bg, -self.offset)
@@ -116,8 +116,8 @@ class Game:
 		for x, y, surf in tmx_map.get_layer_by_name('Pistons').tiles():
 			Sprite((x * 32,y * 32), surf, [self.all_sprites, self.obstacles])
 
-#		for obj in tmx_map.get_layer_by_name('Object'):
-#			Sprite((obj.x, obj.y), obj.image, [self.all_sprites, self.obstacles])
+		for obj in tmx_map.get_layer_by_name('Buttons'):
+			Sprite((obj.x, obj.y), obj.image, [self.all_sprites, self.obstacles])
 
 		for obj in tmx_map.get_layer_by_name('Entities'):
 			if obj.name == 'Player':
@@ -126,7 +126,8 @@ class Game:
 					groups =  self.all_sprites,
 					path =  PATHS['player'],
 					collision_sprites =  self.obstacles,
-					create_bullet =  self.create_bullet)
+					create_bullet =  self.create_bullet,
+					display_surf = self.display_surface)
 			if obj.name == 'Coffin':
 				Coffin((obj.x,obj.y), [self.all_sprites, self.monsters], PATHS['coffin'], self.obstacles, self.player)
 			if obj.name == 'Cactus':
@@ -175,6 +176,7 @@ class Game:
 			
 
 			self.ammo_display()
+			self.player.draw(self.display_surface)
 			if self.player.reloading:
 				self.Reload_display()
 			pygame.display.update()
