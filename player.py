@@ -25,6 +25,10 @@ class Player(Entity):
         self.status = 'Idle'
         self.shoot_effect = pygame.image.load('./graphics/other/shooteffect.png').convert_alpha()
 
+        # Load shooting images
+        self.left_shooting_image = pygame.image.load('./graphics/player/left_shooting.png').convert_alpha()
+        self.right_shooting_image = pygame.image.load('./graphics/player/right_shooting.png').convert_alpha()
+
         # Attributes for fading effect
         self.fade_start_time = 0
         self.fade_duration = 1000  # 1 second
@@ -55,10 +59,16 @@ class Player(Entity):
         frame_width = int(frame_width * 2)
         frame_height = int(frame_height * 2)
         num_frames = image.get_width() // frame_width
-        
+
+        # Debug print to check dimensions
+        print(f"Image size: {image.get_size()}, Frame size: ({frame_width}, {frame_height}), Num frames: {num_frames}")
+
         for i in range(num_frames):
-            frame = image.subsurface((i * frame_width, 0, frame_width, frame_height))
-            frames.append(frame)
+            if (i * frame_width + frame_width <= image.get_width()) and (frame_height <= image.get_height()):
+                frame = image.subsurface((i * frame_width, 0, frame_width, frame_height))
+                frames.append(frame)
+            else:
+                print(f"Skipping frame {i} as it is outside the surface area")
         return frames
 
     def get_status(self):
@@ -77,8 +87,6 @@ class Player(Entity):
         effect_pos = vector(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2) + (mouse_direction * offset_distance)
 
         return effect_pos
-
-
 
     def input(self):
         keys = pygame.key.get_pressed()
@@ -114,9 +122,6 @@ class Player(Entity):
                     self.effect_pos = self.rect.center + self.get_shoot_effect_position(self.get_mouse_direction())
                     self.effect_angle = -self.get_mouse_direction().angle_to(vector(1, 0))
 
-
-
-
     def animate(self, dt):
         current_animation = self.animations.get(self.status, [self.image])
         
@@ -134,13 +139,18 @@ class Player(Entity):
         mouse_direction = self.get_mouse_direction()
         angle = -mouse_direction.angle_to(vector(1, 0))  # Calculate rotation angle
 
-        # Choose and load image based on mouse direction
-        if mouse_direction.x < 0:
-            image_path = './graphics/player/left.png'
+        # Choose and load image based on mouse direction and shooting status
+        if self.attacking:
+            if mouse_direction.x < 0:
+                player_image = self.left_shooting_image
+            else:
+                player_image = self.right_shooting_image
         else:
-            image_path = './graphics/player/right.png'
-        
-        player_image = pygame.image.load(image_path).convert_alpha()
+            if mouse_direction.x < 0:
+                image_path = './graphics/player/left.png'
+            else:
+                image_path = './graphics/player/right.png'
+            player_image = pygame.image.load(image_path).convert_alpha()
 
         # Enlarge the image by a factor of 2
         width, height = player_image.get_size()
@@ -160,28 +170,6 @@ class Player(Entity):
         # Get rect and draw player image
         arrow_rect = rotated_image.get_rect(center=arrow_pos)
         screen.blit(rotated_image, arrow_rect.topleft)
-
-        # Blit shoot effect if attacking
-        if self.attacking:
-            # Calculate the direction vector between the player and the mouse
-            direction_vector = mouse_direction  # Offset from the player's center (midpoint)
-
-            # Position the shoot effect at the midpoint between the player and the mouse
-            effect_pos = self.rect.center + direction_vector
-
-            # Rotate and blit the shoot effect
-            rotated_effect = pygame.transform.rotate(self.shoot_effect, -self.effect_angle)
-
-            # Blit the shoot effect image at the calculated midpoint position
-            screen.blit(rotated_effect, rotated_effect.get_rect(center=effect_pos).topleft)
-
-
-
-
-
-
-
-
 
     def reload(self):
         if self.ammo < 6 and not self.reloading:
@@ -203,8 +191,6 @@ class Player(Entity):
 
         direction = (mouse_pos - player_pos).normalize()  # Get normalized direction vector
         return direction
-
-
 
     def update(self, dt):
         if self.reloading:
@@ -228,6 +214,3 @@ class Player(Entity):
             self.fading = True
             self.current_alpha = 255
             self.shot = False  # Reset shot flag
-
-
-    
