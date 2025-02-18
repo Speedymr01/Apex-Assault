@@ -126,6 +126,7 @@ class Player(Entity):
                     self.effect_angle = -self.get_mouse_direction().angle_to(vector(1, 0))
                     # Store mouse position when attack starts
                     self.stored_mouse_pos = vector(pygame.mouse.get_pos())
+                    self.shoot()
 
     def animate(self, dt):
         current_animation = self.animations.get(self.status, [self.image])
@@ -171,12 +172,12 @@ class Player(Entity):
 
         # Position the arrow image a little away from the player
         if self.attacking:
-            arrow_pos = vector(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2) + (mouse_direction * 200)
+            self.arrow_pos = vector(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2) + (mouse_direction * 200)
         else:
-            arrow_pos = vector(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2) + (mouse_direction * 50)
+            self.arrow_pos = vector(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2) + (mouse_direction * 50)
 
         # Get rect and draw player image
-        arrow_rect = rotated_image.get_rect(center=arrow_pos)
+        arrow_rect = rotated_image.get_rect(center=self.arrow_pos)
         screen.blit(rotated_image, arrow_rect.topleft)
 
     def reload(self):
@@ -202,8 +203,11 @@ class Player(Entity):
         if mouse_pos == player_pos:
             return vector()  # Prevent division by zero
 
-        direction = (mouse_pos - player_pos).normalize()  # Get normalized direction vector
-        return direction
+        self.bullet_direction = (mouse_pos - player_pos).normalize()  # Get normalized direction vector
+        return self.bullet_direction
+
+    def shoot(self):
+        self.create_bullet(self.pos, self.bullet_direction)
 
     def update(self, dt):
         if self.reloading:

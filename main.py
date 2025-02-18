@@ -36,22 +36,22 @@ from monster import Coffin, Cactus
 import time
 
 class Allsprites(pygame.sprite.Group):
-	def __init__(self):
-		super().__init__()
-		self.offset = vector()
-		self.display_surface = pygame.display.get_surface()
-		self.bg = pygame.image.load('./graphics/other/map.png').convert()
-	
-	def customize_draw(self, player):
-		self.offset.x = player.rect.centerx - WINDOW_WIDTH / 2 - 25
-		self.offset.y = player.rect.centery - WINDOW_HEIGHT / 2 + 15
+    def __init__(self):
+        super().__init__()
+        self.offset = vector()
+        self.display_surface = pygame.display.get_surface()
+        self.bg = pygame.image.load('./graphics/other/map.png').convert()
+    
+    def customize_draw(self, player):
+        self.offset.x = player.rect.centerx - WINDOW_WIDTH / 2 - 25
+        self.offset.y = player.rect.centery - WINDOW_HEIGHT / 2 + 15
 
+        self.display_surface.blit(self.bg, -self.offset)
+        for sprite in sorted(self.sprites(), key = lambda sprite: sprite.rect.centery):
+            offset_rect = sprite.image.get_rect(center = sprite.rect.center)
+            offset_rect.center -= self.offset
+            self.display_surface.blit(sprite.image, offset_rect)
 
-		self.display_surface.blit(self.bg, -self.offset)
-		for sprite in sorted(self.sprites(), key = lambda sprite: sprite.rect.centery):
-			offset_rect = sprite.image.get_rect(center = sprite.rect.center)
-			offset_rect.center -= self.offset
-			self.display_surface.blit(sprite.image, offset_rect)
 
 class Game: 
 	def __init__(self):
@@ -75,13 +75,11 @@ class Game:
 		#self.music.play(loops = -1)
 
 	def create_bullet(self, pos, direction):
-		Bullet(pos, direction, self.bullet_surf, [self.all_sprites, self.bullets])
+		Bullet(pos, direction, self.bullet_surf, [self.all_sprites, self.bullets], self.player)
 
 	def bullet_collision(self):
-
-		for obstacle in self. obstacles.sprites():
+		for obstacle in self.obstacles.sprites():
 			pygame.sprite.spritecollide(obstacle, self.bullets, True, pygame.sprite.collide_mask)
-
 		for bullet in self.bullets.sprites():
 			sprites = pygame.sprite.spritecollide(bullet, self.monsters, False, pygame.sprite.collide_mask)
 
@@ -90,8 +88,11 @@ class Game:
 				for sprite in sprites:
 					sprite.damage()
 
-		if pygame.sprite.spritecollide(self.player, self.bullets, True, pygame.sprite.collide_mask):
-			self.player.damage()
+        # Exclude bullets fired by the player when checking for collisions with the player
+		for bullet in self.bullets.sprites():
+			if bullet.shooter != self.player:
+				if pygame.sprite.spritecollide(self.player, self.bullets, True, pygame.sprite.collide_mask):
+					self.player.damage()
 
 	def ammo_display(self):
 		Highscore_text = f'{self.player.ammo}/{AMMO}'
