@@ -1,12 +1,14 @@
 import pygame
 
 class Sprite(pygame.sprite.Sprite):
-	def __init__(self,pos,surf,groups):
-		super().__init__(groups)
-		self.image = surf
-		self.rect = self.image.get_rect(topleft = pos)
-		self.hitbox = self.rect.inflate(0,-self.rect.height / 3)
-		self.mask = pygame.mask.from_surface(self.image)
+    def __init__(self, pos, surf, groups):
+        super().__init__(groups)
+        self.image = surf
+        self.rect = self.image.get_rect(topleft=pos)
+        self.hitbox = self.rect.inflate(0, -self.rect.height / 3)
+        self.mask = pygame.mask.from_surface(self.image)
+
+
 
 class Bullet(pygame.sprite.Sprite):
     def __init__(self, pos, direction, surf, groups, shooter):
@@ -23,5 +25,17 @@ class Bullet(pygame.sprite.Sprite):
         self.pos += self.direction * self.speed * dt
         self.rect.center = (round(self.pos.x), round(self.pos.y))
 
+class Button(pygame.sprite.Sprite):
+    def __init__(self, pos, surf, groups):
+        super().__init__(groups)
+        self.image = surf
+        self.rect = self.image.get_rect(topleft=pos)
+        self.hitbox = self.rect.inflate(0, -self.rect.height / 3)
+        self.mask = pygame.mask.from_surface(self.image)
+        self.pressed = False
 
-		
+    def is_pressed(self, player):
+        if self.rect.colliderect(player.rect):
+            self.pressed = True
+            return True
+        return False

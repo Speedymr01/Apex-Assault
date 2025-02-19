@@ -41,8 +41,9 @@ class Player(Entity):
         # Attribute to store fixed effect position
         self.effect_pos = None
 
-        # Attribute to store mouse position when attacking starts
-        self.stored_mouse_pos = vector()
+        # Cooldown attributes
+        self.last_shot_time = 0
+        self.shot_cooldown = 500  # Cooldown period in milliseconds
 
     def import_assets(self, path):
         animations = {}
@@ -93,6 +94,7 @@ class Player(Entity):
 
     def input(self):
         keys = pygame.key.get_pressed()
+        current_time = pygame.time.get_ticks()
         if not self.attacking:
             if keys[pygame.K_d]:
                 self.direction.x = 1
@@ -113,7 +115,7 @@ class Player(Entity):
             if keys[pygame.K_r]:
                 self.reload()
             if pygame.mouse.get_pressed()[0]:
-                if self.ammo > 0 and not self.reloading:
+                if self.ammo > 0 and not self.reloading and (current_time - self.last_shot_time >= self.shot_cooldown):
                     self.attacking = True
                     self.direction = vector()
                     self.frame_index = 0
@@ -124,9 +126,8 @@ class Player(Entity):
                     # Store effect position relative to the player's initial position
                     self.effect_pos = self.rect.center + self.get_shoot_effect_position(self.get_mouse_direction())
                     self.effect_angle = -self.get_mouse_direction().angle_to(vector(1, 0))
-                    # Store mouse position when attack starts
-                    self.stored_mouse_pos = vector(pygame.mouse.get_pos())
                     self.shoot()
+                    self.last_shot_time = current_time  # Update the last shot time
 
     def animate(self, dt):
         current_animation = self.animations.get(self.status, [self.image])
@@ -192,22 +193,17 @@ class Player(Entity):
             sys.exit()
 
     def get_mouse_direction(self):
-        if self.attacking:
-            # Use stored mouse position when attacking
-            mouse_pos = self.stored_mouse_pos
-        else:
-            mouse_pos = vector(pygame.mouse.get_pos())  # Get mouse position
-
+        mouse_pos = vector(pygame.mouse.get_pos())  # Get mouse position
         player_pos = vector(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2)  # Player is always at window center
 
         if mouse_pos == player_pos:
             return vector()  # Prevent division by zero
 
-        self.bullet_direction = (mouse_pos - player_pos).normalize()  # Get normalized direction vector
-        return self.bullet_direction
+        return (mouse_pos - player_pos).normalize()  # Get normalized direction vector
 
     def shoot(self):
-        self.create_bullet(self.pos, self.bullet_direction)
+        bullet_direction = self.get_mouse_direction()  # Calculate direction at the moment of shooting
+        self.create_bullet(self.rect.center, bullet_direction)
 
     def update(self, dt):
         if self.reloading:
