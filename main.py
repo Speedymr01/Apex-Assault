@@ -107,28 +107,36 @@ class Game:
 
     def setup(self):
         tmx_map = load_pygame('./data/map.tmx')
-        gid_to_image_path = {
-            68: './graphics/tileset/IndustrialTile_45up.png',
-            77: './graphics/tileset/IndustrialTile_54.png',
-            88: './graphics/tileset/IndustrialTile_45down.png',
-            85: './graphics/tileset/IndustrialTile_54side.png',
-            86: './graphics/tileset/IndustrialTile_45left.png',
-            87: './graphics/tileset/IndustrialTile_45right.png',
-            # Add other mappings as needed
-    }
-        
+        pistons_layer = tmx_map.get_layer_by_name('Pistons')
 
+        doors = {}
+        for obj in pistons_layer:
+            image_path = obj.source.replace("..", ".")
+            door = PistonDoor((obj.x, obj.y), image_path, [self.obstacles])
+            door_id = int(obj.properties['door'])
+            if door_id not in doors:
+                doors[door_id] = []
+            doors[door_id].append(door)
+
+        for door_pair in doors.values():
+            if len(door_pair) == 2:
+                door_pair[0].pair = door_pair[1]
+                door_pair[1].pair = door_pair[0]
+
+        self.walls = pygame.sprite.Group()
         for x, y, surf in tmx_map.get_layer_by_name('Walls').tiles():
+            wall = Sprite((x * 32, y * 32), surf, [self.all_sprites, self.obstacles, self.walls])
+        
+        for x, y, surf in tmx_map.get_layer_by_name('Pistonwall').tiles():
             Sprite((x * 32, y * 32), surf, [self.all_sprites, self.obstacles])
-        for obj in tmx_map.get_layer_by_name('Pistons'):
-            gid = obj.gid
-            direction = obj.properties.get('direction', 'up')  # Default to 'up' if no direction is specified
-            print(gid)
-            image_path = gid_to_image_path.get(gid, './graphics/tileset/IndustrialTile_45down.png')  # Default image path
-            PistonDoor((obj.x, obj.y), image_path, [self.all_sprites, self.obstacles], direction)
-
-        for obj in tmx_map.get_layer_by_name('Buttons'):
-            Button((obj.x, obj.y), obj.image, [self.all_sprites, self.obstacles])
+        
+        buttons_layer = tmx_map.get_layer_by_name('Buttons')
+        for obj in buttons_layer:
+            button_image_path = obj.source.replace("..", ".")
+            button = Button((obj.x, obj.y), button_image_path, [self.all_sprites, self.obstacles])
+            button_id = int(obj.properties['door'])
+            if button_id in doors:
+                button.door = doors[button_id][0]  # Assign the first door in the pair to the button
 
         for obj in tmx_map.get_layer_by_name('Entities'):
             if obj.name == 'Player':
@@ -146,6 +154,11 @@ class Game:
 
         self.heart_surf = pygame.image.load('./graphics/other/heart.png').convert_alpha()
 
+    def extract_number_from_path(self, path):
+        # Assuming the number is part of the filename, e.g., "1.png"
+        filename = path.split('/')[-1]
+        number = int(filename.split('.')[0])
+        return number
 
     def display_win(self):
         Highscore_text = 'You Escaped!'
@@ -156,14 +169,16 @@ class Game:
         pygame.display.update()
         time.sleep(5)
 
-
     def check_button_presses(self):
         for button in self.obstacles:
-            if isinstance(button, Button) and button.is_pressed(self.player):
-                for door in self.obstacles:
-                    if isinstance(door, PistonDoor):
-                        door.open_door()
-
+            if isinstance(button, Button) and self.player.rect.colliderect(button.rect):
+                print(f"Button pressed at {button.rect.topleft}")
+                if not button.pressed:
+                    print('yes')
+                    if button.door:
+                        button.door.start_moving()
+                    button.pressed = True
+                    print(f"Door at {button.door.rect.topleft} started moving")
 
     def run(self):
         while self.player.score != 25:
@@ -178,6 +193,9 @@ class Game:
             self.all_sprites.update(dt)
             self.bullet_collision()
             self.check_button_presses()
+            for door in self.obstacles:
+                if isinstance(door, PistonDoor):
+                    door.update(dt, self.walls)
             # Draw
             self.display_surface.fill('black')
             
