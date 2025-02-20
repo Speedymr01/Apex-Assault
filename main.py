@@ -50,6 +50,8 @@ class Allsprites(pygame.sprite.Group):
             offset_rect.center -= self.offset
             self.display_surface.blit(sprite.image, offset_rect)
 
+        
+
 class Game: 
     def __init__(self):
         pygame.init()
@@ -112,7 +114,8 @@ class Game:
         doors = {}
         for obj in pistons_layer:
             image_path = obj.source.replace("..", ".")
-            door = PistonDoor((obj.x, obj.y), image_path, [self.obstacles])
+            print(f"Door image path: {image_path}")  # Debugging print
+            door = PistonDoor((obj.x, obj.y), image_path, [self.all_sprites, self.obstacles])
             door_id = int(obj.properties['door'])
             if door_id not in doors:
                 doors[door_id] = []
@@ -122,10 +125,19 @@ class Game:
             if len(door_pair) == 2:
                 door_pair[0].pair = door_pair[1]
                 door_pair[1].pair = door_pair[0]
+                # Set opposite directions for the doors in the pair
+                if door_pair[0].direction == 'up':
+                    door_pair[1].direction = 'down'
+                elif door_pair[0].direction == 'down':
+                    door_pair[1].direction = 'up'
+                elif door_pair[0].direction == 'left':
+                    door_pair[1].direction = 'right'
+                elif door_pair[0].direction == 'right':
+                    door_pair[1].direction = 'left'
 
         self.walls = pygame.sprite.Group()
         for x, y, surf in tmx_map.get_layer_by_name('Walls').tiles():
-            wall = Sprite((x * 32, y * 32), surf, [self.all_sprites, self.obstacles, self.walls])
+            Sprite((x * 32, y * 32), surf, [self.all_sprites, self.obstacles, self.walls])
         
         for x, y, surf in tmx_map.get_layer_by_name('Pistonwall').tiles():
             Sprite((x * 32, y * 32), surf, [self.all_sprites, self.obstacles])
@@ -133,6 +145,7 @@ class Game:
         buttons_layer = tmx_map.get_layer_by_name('Buttons')
         for obj in buttons_layer:
             button_image_path = obj.source.replace("..", ".")
+            print(f"Button image path: {button_image_path}")  # Debugging print
             button = Button((obj.x, obj.y), button_image_path, [self.all_sprites, self.obstacles])
             button_id = int(obj.properties['door'])
             if button_id in doors:
@@ -172,8 +185,8 @@ class Game:
     def check_button_presses(self):
         for button in self.obstacles:
             if isinstance(button, Button) and self.player.rect.colliderect(button.rect):
-                print(f"Button pressed at {button.rect.topleft}")
                 if not button.pressed:
+                    print(f"Button pressed at {button.rect.topleft}")
                     print('yes')
                     if button.door:
                         button.door.start_moving()
@@ -190,12 +203,13 @@ class Game:
             dt = self.clock.tick() / 1000
 
             # Update
-            self.all_sprites.update(dt)
+            for sprite in self.all_sprites.sprites():
+                if not isinstance(sprite, PistonDoor):
+                    sprite.update(dt)
+                elif isinstance(sprite, PistonDoor):
+                    sprite.update(dt, self.walls)
             self.bullet_collision()
             self.check_button_presses()
-            for door in self.obstacles:
-                if isinstance(door, PistonDoor):
-                    door.update(dt, self.walls)
             # Draw
             self.display_surface.fill('black')
             

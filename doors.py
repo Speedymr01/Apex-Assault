@@ -3,9 +3,13 @@ from sprite import Sprite
 
 class PistonDoor(Sprite):
     def __init__(self, pos, image_path, groups, pair=None):
+        print(f"Loading image from path: {image_path}")  # Debugging print
         surf = pygame.image.load(image_path).convert_alpha()
         super().__init__(pos, surf, groups)
         self.path = image_path
+        self.rect = self.image.get_rect(topleft=pos)
+        self.hitbox = self.rect.inflate(0, -self.rect.height / 3)
+        self.mask = pygame.mask.from_surface(self.image)
         self.speed = 1000  # Adjust the speed as needed
         self.moving = False
         self.direction = self.find_direction()
@@ -46,11 +50,7 @@ class PistonDoor(Sprite):
             # Update hitbox position
             self.hitbox.topleft = self.rect.topleft
 
-            # Check for collision with the paired door
-            if self.pair and self.rect.colliderect(self.pair.rect):
-                self.stop_moving()
-                self.pair.stop_moving()
-                print('Collision detected with pair')
+
 
             # Check for collision with walls
             if pygame.sprite.spritecollide(self, walls, False, pygame.sprite.collide_mask):
