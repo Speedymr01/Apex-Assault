@@ -93,6 +93,14 @@ class Game:
                 if pygame.sprite.spritecollide(self.player, self.bullets, True, pygame.sprite.collide_mask):
                     self.player.damage()
 
+        # Handle collisions between bullets and spawners
+        for bullet in self.bullets.sprites():
+            spawners = pygame.sprite.spritecollide(bullet, self.obstacles, False, pygame.sprite.collide_mask)
+            for spawner in spawners:
+                if isinstance(spawner, Spawner):
+                    bullet.kill()
+                    spawner.damage()
+
     def ammo_display(self):
         Highscore_text = f'{self.player.ammo}/{AMMO}'
         text_surf = self.font.render(Highscore_text, True, (255, 255, 255))
