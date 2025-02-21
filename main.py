@@ -59,7 +59,7 @@ class Game:
         self.display_surface = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
         pygame.display.set_caption('Western shooter')
         self.clock = pygame.time.Clock()
-        self.bullet_surf = pygame.image.load('graphics/other/bullet.png').convert_alpha()
+        self.bullet_surf = pygame.image.load('./graphics/other/bullet.png').convert_alpha()
 
         # Groups
         self.all_sprites = Allsprites()
@@ -163,15 +163,12 @@ class Game:
                     collision_sprites=self.obstacles,
                     create_bullet=self.create_bullet,
                     display_surf=self.display_surface)
-            if obj.name == 'Coffin':
-                Coffin((obj.x, obj.y), [self.all_sprites, self.monsters], PATHS['coffin'], self.obstacles, self.player)
-            if obj.name == 'Cactus':
-                Cactus((obj.x, obj.y), [self.all_sprites, self.monsters], PATHS['cactus'], self.obstacles, self.player, self.create_bullet)
+            
             if obj.name == 'Spawner':
                 Spawner((obj.x, obj.y), [self.all_sprites, self.obstacles, self.spawners], self.obstacles, self.player, self.create_bullet)
 
         self.heart_surf = pygame.image.load('./graphics/other/heart.png').convert_alpha()
-
+        
     def extract_number_from_path(self, path):
         # Assuming the number is part of the filename, e.g., "1.png"
         filename = path.split('/')[-1]

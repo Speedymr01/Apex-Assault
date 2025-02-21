@@ -3,6 +3,7 @@ from pygame.math import Vector2 as vector
 from os import walk
 from math import sin
 from settings import *
+import inspect
 
 class Entity(pygame.sprite.Sprite):
     def __init__(self, pos, groups, path, collision_sprites):
@@ -74,17 +75,34 @@ class Entity(pygame.sprite.Sprite):
    
     def import_assets(self, path):
         self.animations = {}
-
-        for index, folder in enumerate(walk(path)):
-            if index == 0:
-                for name in folder[1]:
-                    self.animations[name] = []
-            else:
-                for file_name in sorted(folder[2], key = lambda string: int(string.split('.')[0])):
-                    path = folder[0].replace("\\", "/") + '/' + file_name
-                    surf = pygame.image.load(path).convert_alpha()
-                    key = folder[0].split('\\')[1]
-                    self.animations[key].append(surf)
+        if any(frame.function == '__init__' and 'HybridEnemy' in frame.frame.f_globals for frame in inspect.stack()):
+            animations = {
+                'attack1': [],
+                'attack2': [],
+                'attack3': [],
+                'attack4': [],
+                'death': [],
+                'hurt': [],
+                'idle': [],
+                'special': [],
+                'walk': []
+            }
+            for animation in animations.keys():
+                full_path = f'{path}/{animation}.png'
+                image = pygame.image.load(full_path).convert_alpha()
+                animations[animation].append(image)
+            return animations
+        else:    
+            for index, folder in enumerate(walk(path)):
+                if index == 0:
+                    for name in folder[1]:
+                        self.animations[name] = []
+                else:
+                    for file_name in sorted(folder[2], key = lambda string: int(string.split('.')[0])):
+                        path = folder[0].replace("\\", "/") + '/' + file_name
+                        surf = pygame.image.load(path).convert_alpha()
+                        key = folder[0].split('\\')[1]
+                        self.animations[key].append(surf)
 
     def move(self, dt):
         # Normalize

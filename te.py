@@ -1,0 +1,1 @@
+print(any(frame.function == '__init__' and 'HybridEnemy' in frame.frame.f_globals for frame in inspect.stack()))

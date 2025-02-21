@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.11.0" orientation="orthogonal" renderorder="right-down" width="100" height="100" tilewidth="32" tileheight="32" infinite="0" nextlayerid="12" nextobjectid="125">
+<map version="1.10" tiledversion="1.11.0" orientation="orthogonal" renderorder="right-down" width="100" height="100" tilewidth="32" tileheight="32" infinite="0" nextlayerid="13" nextobjectid="162">
  <tileset firstgid="1" name="TIleset" tilewidth="32" tileheight="32" tilecount="89" columns="0">
   <grid orientation="orthogonal" width="1" height="1"/>
   <tile id="0">
@@ -712,7 +712,7 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
- <objectgroup id="6" name="Entities" visible="0">
+ <objectgroup id="6" name="Entities">
   <object id="8" name="Player" x="448" y="352">
    <point/>
   </object>
@@ -720,69 +720,135 @@
    <point/>
   </object>
   <object id="15" name="Spawner" x="320" y="1824">
+   <properties>
+    <property name="spawner" type="int" value="1"/>
+   </properties>
    <point/>
   </object>
   <object id="16" name="Spawner" x="864" y="1504">
+   <properties>
+    <property name="spawner" type="int" value="2"/>
+   </properties>
    <point/>
   </object>
   <object id="17" name="Spawner" x="864" y="256">
+   <properties>
+    <property name="spawner" type="int" value="3"/>
+   </properties>
    <point/>
   </object>
   <object id="18" name="Spawner" x="1440" y="1216">
+   <properties>
+    <property name="spawner" type="int" value="5"/>
+   </properties>
    <point/>
   </object>
   <object id="19" name="Spawner" x="1216" y="512">
+   <properties>
+    <property name="spawner" type="int" value="4"/>
+   </properties>
    <point/>
   </object>
   <object id="20" name="Spawner" x="1568" y="1824">
+   <properties>
+    <property name="spawner" type="int" value="6"/>
+   </properties>
    <point/>
   </object>
   <object id="21" name="Spawner" x="1696" y="1152">
+   <properties>
+    <property name="spawner" type="int" value="7"/>
+   </properties>
    <point/>
   </object>
   <object id="22" name="Spawner" x="1824" y="480">
+   <properties>
+    <property name="spawner" type="int" value="8"/>
+   </properties>
    <point/>
   </object>
   <object id="23" name="Spawner" x="2464" y="544">
+   <properties>
+    <property name="spawner" type="int" value="9"/>
+   </properties>
    <point/>
   </object>
   <object id="24" name="Spawner" x="2112" y="928">
+   <properties>
+    <property name="spawner" type="int" value="9"/>
+   </properties>
    <point/>
   </object>
   <object id="25" name="Spawner" x="2464" y="1440">
+   <properties>
+    <property name="spawner" type="int" value="9"/>
+   </properties>
    <point/>
   </object>
   <object id="26" name="Spawner" x="2144" y="1984">
+   <properties>
+    <property name="spawner" type="int" value="10"/>
+   </properties>
    <point/>
   </object>
   <object id="27" name="Spawner" x="1728" y="2304">
+   <properties>
+    <property name="spawner" type="int" value="10"/>
+   </properties>
    <point/>
   </object>
   <object id="28" name="Spawner" x="1216" y="2080">
+   <properties>
+    <property name="spawner" type="int" value="10"/>
+   </properties>
    <point/>
   </object>
   <object id="29" name="Spawner" x="2880" y="1376">
+   <properties>
+    <property name="spawner" type="int" value="12"/>
+   </properties>
    <point/>
   </object>
   <object id="30" name="Spawner" x="2880" y="2112">
+   <properties>
+    <property name="spawner" type="int" value="12"/>
+   </properties>
    <point/>
   </object>
   <object id="31" name="Spawner" x="480" y="2624">
+   <properties>
+    <property name="spawner" type="int" value="11"/>
+   </properties>
    <point/>
   </object>
-  <object id="32" name="Spawner" x="768" y="3104">
+  <object id="32" name="Spawner" x="768" y="3072">
+   <properties>
+    <property name="spawner" type="int" value="11"/>
+   </properties>
    <point/>
   </object>
   <object id="34" name="Spawner" x="2208" y="2656">
+   <properties>
+    <property name="spawner" type="int" value="11"/>
+   </properties>
    <point/>
   </object>
-  <object id="36" name="Spawner" x="1984" y="3104">
+  <object id="36" name="Spawner" x="1984" y="3072">
+   <properties>
+    <property name="spawner" type="int" value="11"/>
+   </properties>
    <point/>
   </object>
   <object id="37" name="Spawner" x="1664" y="2784">
+   <properties>
+    <property name="spawner" type="int" value="11"/>
+   </properties>
    <point/>
   </object>
   <object id="38" name="Spawner" x="992" y="2752">
+   <properties>
+    <property name="spawner" type="int" value="11"/>
+   </properties>
    <point/>
   </object>
   <object id="39" name="Enemy" x="2720" y="2592">
@@ -799,6 +865,88 @@
   </object>
   <object id="43" name="Enemy" x="2880" y="768">
    <point/>
+  </object>
+ </objectgroup>
+ <objectgroup id="12" name="Spawns">
+  <object id="146" x="1888" y="32" width="160" height="288">
+   <properties>
+    <property name="spawner" type="int" value="9"/>
+   </properties>
+  </object>
+  <object id="147" x="32" y="1280" width="288" height="128">
+   <properties>
+    <property name="spawner" type="int" value="1"/>
+   </properties>
+  </object>
+  <object id="148" x="1120" y="2432" width="384" height="32">
+   <properties>
+    <property name="spawner" type="int" value="11"/>
+   </properties>
+  </object>
+  <object id="149" x="608" y="2432" width="32" height="736">
+   <properties>
+    <property name="spawner" type="int" value="11"/>
+   </properties>
+  </object>
+  <object id="150" x="1760" y="2432" width="32" height="736">
+   <properties>
+    <property name="spawner" type="int" value="11"/>
+   </properties>
+  </object>
+  <object id="151" x="2624" y="3008" width="544" height="160">
+   <properties>
+    <property name="spawner" type="int" value="13"/>
+   </properties>
+  </object>
+  <object id="152" x="2624" y="32" width="544" height="192">
+   <properties>
+    <property name="spawner" type="int" value="14"/>
+   </properties>
+  </object>
+  <object id="153" x="704" y="2112" width="384" height="288">
+   <properties>
+    <property name="spawner" type="int" value="2"/>
+   </properties>
+  </object>
+  <object id="154" x="704" y="800" width="384" height="320">
+   <properties>
+    <property name="spawner" type="int" value="3"/>
+   </properties>
+  </object>
+  <object id="155" x="1088" y="32" width="288" height="288">
+   <properties>
+    <property name="spawner" type="int" value="4"/>
+   </properties>
+  </object>
+  <object id="156" x="1120" y="704" width="160" height="320">
+   <properties>
+    <property name="spawner" type="int" value="5"/>
+   </properties>
+  </object>
+  <object id="157" x="1120" y="1376" width="128" height="160">
+   <properties>
+    <property name="spawner" type="int" value="6"/>
+   </properties>
+  </object>
+  <object id="158" x="1600" y="1376" width="384" height="192">
+   <properties>
+    <property name="spawner" type="int" value="7"/>
+   </properties>
+  </object>
+  <object id="159" x="1824" y="704" width="160" height="160">
+   <properties>
+    <property name="spawner" type="int" value="8"/>
+   </properties>
+  </object>
+  <object id="160" x="2016" y="1664" width="576" height="64">
+   <properties>
+    <property name="spawner" type="int" value="10"/>
+   </properties>
+  </object>
+  <object id="161" x="2624" y="1504" width="32" height="512">
+   <properties>
+    <property name="spawner" type="int" value="12"/>
+   </properties>
   </object>
  </objectgroup>
  <objectgroup id="8" name="Buttons">
