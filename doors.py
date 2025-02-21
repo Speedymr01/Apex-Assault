@@ -10,7 +10,7 @@ class PistonDoor(Sprite):
         self.rect = self.image.get_rect(topleft=pos)
         self.hitbox = self.rect.inflate(0, -self.rect.height / 3)
         self.mask = pygame.mask.from_surface(self.image)
-        self.speed = 1000  # Adjust the speed as needed
+        self.speed = 250  # Adjust the speed as needed
         self.moving = False
         self.direction = self.find_direction()
         self.pair = pair  # Add pair attribute

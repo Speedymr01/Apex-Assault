@@ -32,6 +32,7 @@ from sprite import Sprite, Bullet, Button
 from monster import Coffin, Cactus
 import time
 from doors import PistonDoor
+from spawner import Spawner
 
 class Allsprites(pygame.sprite.Group):
     def __init__(self):
@@ -125,15 +126,7 @@ class Game:
             if len(door_pair) == 2:
                 door_pair[0].pair = door_pair[1]
                 door_pair[1].pair = door_pair[0]
-                # Set opposite directions for the doors in the pair
-                if door_pair[0].direction == 'up':
-                    door_pair[1].direction = 'down'
-                elif door_pair[0].direction == 'down':
-                    door_pair[1].direction = 'up'
-                elif door_pair[0].direction == 'left':
-                    door_pair[1].direction = 'right'
-                elif door_pair[0].direction == 'right':
-                    door_pair[1].direction = 'left'
+
 
         self.walls = pygame.sprite.Group()
         for x, y, surf in tmx_map.get_layer_by_name('Walls').tiles():
@@ -164,6 +157,8 @@ class Game:
                 Coffin((obj.x, obj.y), [self.all_sprites, self.monsters], PATHS['coffin'], self.obstacles, self.player)
             if obj.name == 'Cactus':
                 Cactus((obj.x, obj.y), [self.all_sprites, self.monsters], PATHS['cactus'], self.obstacles, self.player, self.create_bullet)
+            if obj.name == 'Spawner':
+                Spawner((obj.x, obj.y), [self.all_sprites, self.obstacles], self.obstacles, self.player, self.create_bullet)
 
         self.heart_surf = pygame.image.load('./graphics/other/heart.png').convert_alpha()
 
@@ -183,15 +178,17 @@ class Game:
         time.sleep(5)
 
     def check_button_presses(self):
-        for button in self.obstacles:
-            if isinstance(button, Button) and self.player.rect.colliderect(button.rect):
-                if not button.pressed:
-                    print(f"Button pressed at {button.rect.topleft}")
-                    print('yes')
-                    if button.door:
-                        button.door.start_moving()
-                    button.pressed = True
-                    print(f"Door at {button.door.rect.topleft} started moving")
+        keys = pygame.key.get_pressed()
+        if keys[pygame.K_e]:
+            for button in self.obstacles:
+                if isinstance(button, Button) and self.player.rect.colliderect(button.rect):
+                    if not button.pressed:
+                        print(f"Button pressed at {button.rect.topleft}")
+                        print('yes')
+                        if button.door:
+                            button.door.start_moving()
+                        button.pressed = True
+                        print(f"Door at {button.door.rect.topleft} started moving")
 
     def run(self):
         while self.player.score != 25:
