@@ -66,6 +66,7 @@ class Game:
         self.obstacles = pygame.sprite.Group()
         self.bullets = pygame.sprite.Group()
         self.monsters = pygame.sprite.Group()
+        self.spawners = pygame.sprite.Group()
 
         self.setup()
         self.font = pygame.font.Font('./font/subatomic.ttf', 50)
@@ -78,7 +79,8 @@ class Game:
 
     def bullet_collision(self):
         for obstacle in self.obstacles.sprites():
-            pygame.sprite.spritecollide(obstacle, self.bullets, True, pygame.sprite.collide_mask)
+            if not isinstance(obstacle, Spawner):
+                pygame.sprite.spritecollide(obstacle, self.bullets, True, pygame.sprite.collide_mask)
         for bullet in self.bullets.sprites():
             sprites = pygame.sprite.spritecollide(bullet, self.monsters, False, pygame.sprite.collide_mask)
 
@@ -166,7 +168,7 @@ class Game:
             if obj.name == 'Cactus':
                 Cactus((obj.x, obj.y), [self.all_sprites, self.monsters], PATHS['cactus'], self.obstacles, self.player, self.create_bullet)
             if obj.name == 'Spawner':
-                Spawner((obj.x, obj.y), [self.all_sprites, self.obstacles], self.obstacles, self.player, self.create_bullet)
+                Spawner((obj.x, obj.y), [self.all_sprites, self.obstacles, self.spawners], self.obstacles, self.player, self.create_bullet)
 
         self.heart_surf = pygame.image.load('./graphics/other/heart.png').convert_alpha()
 
