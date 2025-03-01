@@ -2,6 +2,7 @@ import pygame
 from entity import Entity
 from pygame.math import Vector2 as vector
 from settings import *
+import os
 
 class Monster():
     def get_player_distance_direction(self):
@@ -184,22 +185,35 @@ class HybridEnemy(Entity, Monster):
         self.status = 'Idle'
 
     def import_assets(self, path):
-        animations = {
-            'attack1': [],
-            'attack2': [],
-            'attack3': [],
-            'attack4': [],
-            'death': [],
-            'hurt': [],
-            'idle': [],
-            'special': [],
-            'walk': []
-        }
-        for animation in animations.keys():
-            full_path = f'{path}/{animation}.png'
-            image = pygame.image.load(full_path).convert_alpha()
-            animations[animation].append(image)
+        animations = {}
+        for root, _, files in os.walk(path):
+            for file in files:
+                if file.endswith('.png'):
+                    animation_name = file.split('.')[0]
+                    image = pygame.image.load(os.path.join(root, file)).convert_alpha()
+                    image = pygame.transform.scale(image, (int(image.get_width() * 2), int(image.get_height() * 2)))
+                    frames = self.extract_frames(image)
+                    animations[animation_name] = frames
         return animations
+
+    def extract_frames(self, image):
+        frames = []
+        frame_width, frame_height = 48, 48
+        frame_width = int(frame_width * 2)
+        frame_height = int(frame_height * 2)
+        num_frames = image.get_width() // frame_width
+
+        # Debug print to check dimensions
+        print(f"Image size: {image.get_size()}, Frame size: ({frame_width}, {frame_height}), Num frames: {num_frames}")
+
+        for i in range(num_frames):
+            if (i * frame_width + frame_width <= image.get_width()) and (frame_height <= image.get_height()):
+                frame = image.subsurface((i * frame_width, 0, frame_width, frame_height))
+                frames.append(frame)
+            else:
+                print(f"Skipping frame {i} as it is outside the surface area")
+        return frames
+
 
     def animate(self, dt):
         current_animation = self.animations[self.status]

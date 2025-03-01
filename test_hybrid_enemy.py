@@ -26,12 +26,16 @@ class TestHybridEnemy(unittest.TestCase):
 
     @patch('pygame.mixer.Sound')
     def test_attack(self, mock_sound):
+        mock_sound_instance = mock_sound.return_value
+        self.hybrid_enemy.shoot_sound = mock_sound_instance
         self.hybrid_enemy.get_player_distance_direction = Mock(return_value=(40, pygame.math.Vector2(1, 0)))
         self.hybrid_enemy.attack()
         self.assertTrue(self.hybrid_enemy.attacking)
         self.assertEqual(self.hybrid_enemy.frame_index, 0)
         self.assertFalse(self.hybrid_enemy.bullet_shot)
-        mock_sound.return_value.play.assert_called_once()
+        mock_sound_instance.play.assert_called_once()
+        self.assertFalse(self.hybrid_enemy.bullet_shot)
+        mock_sound_instance.play.assert_called_once()
 
     def test_animate(self):
         self.hybrid_enemy.attacking = True
@@ -66,6 +70,16 @@ class TestHybridEnemy(unittest.TestCase):
         self.hybrid_enemy.check_death.assert_called_once()
         self.hybrid_enemy.vulnerability_timer.assert_called_once()
         self.hybrid_enemy.blink.assert_called_once()
+
+    def test_take_damage(self):
+        initial_health = self.hybrid_enemy.health
+        self.hybrid_enemy.take_damage()
+        self.assertEqual(self.hybrid_enemy.health, initial_health - 1)
+
+    def test_move(self):
+        initial_position = self.hybrid_enemy.rect.topleft
+        self.hybrid_enemy.move(pygame.math.Vector2(1, 0))
+        self.assertNotEqual(self.hybrid_enemy.rect.topleft, initial_position)
 
 if __name__ == '__main__':
     unittest.main()

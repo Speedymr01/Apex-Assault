@@ -42,8 +42,8 @@ class Allsprites(pygame.sprite.Group):
         self.bg = pygame.image.load('./graphics/other/map.png').convert()
     
     def customize_draw(self, player):
-        self.offset.x = player.rect.centerx - WINDOW_WIDTH / 2 - 25
-        self.offset.y = player.rect.centery - WINDOW_HEIGHT / 2 + 15
+        self.offset.x = player.rect.centerx - WINDOW_WIDTH / 2
+        self.offset.y = player.rect.centery - WINDOW_HEIGHT / 2
 
         self.display_surface.blit(self.bg, -self.offset)
         for sprite in sorted(self.sprites(), key = lambda sprite: sprite.rect.centery):
@@ -60,6 +60,7 @@ class Game:
         pygame.display.set_caption('Western shooter')
         self.clock = pygame.time.Clock()
         self.bullet_surf = pygame.image.load('./graphics/other/bullet.png').convert_alpha()
+        
 
         # Groups
         self.all_sprites = Allsprites()
@@ -67,12 +68,14 @@ class Game:
         self.bullets = pygame.sprite.Group()
         self.monsters = pygame.sprite.Group()
         self.spawners = pygame.sprite.Group()
-
+        
+        self.enemy_groups = [self.obstacles, self.monsters]
         self.setup()
         self.font = pygame.font.Font('./font/subatomic.ttf', 50)
         #self.music = pygame.mixer.Sound('./sound/music.mp3')
         #self.music.set_volume(MUSIC_VOLUME)
         #self.music.play(loops = -1)
+        
 
     def create_bullet(self, pos, direction):
         Bullet(pos, direction, self.bullet_surf, [self.all_sprites, self.bullets], self.player)
@@ -165,7 +168,8 @@ class Game:
                     display_surf=self.display_surface)
             
             if obj.name == 'Spawner':
-                Spawner((obj.x, obj.y), [self.all_sprites, self.obstacles, self.spawners], self.obstacles, self.player, self.create_bullet)
+                spawn_number = obj.properties['spawner']
+                Spawner((obj.x, obj.y), [self.all_sprites, self.obstacles, self.spawners], self.obstacles, self.player, self.create_bullet, self.enemy_groups, spawn_number)
 
         self.heart_surf = pygame.image.load('./graphics/other/heart.png').convert_alpha()
         
