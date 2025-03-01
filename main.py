@@ -21,7 +21,6 @@ def install_modules(modules):
                 command = f"py -m pip install {module}"
                 os.system(command)
                 print(f"{module} installed successfully.")
-install_modules(modules)
 
 import pygame, sys
 from settings import * 
@@ -52,6 +51,36 @@ class Allsprites(pygame.sprite.Group):
             self.display_surface.blit(sprite.image, offset_rect)
 
         
+class Intro:
+    def __init__(self):
+        pygame.init()
+        self.display_surface = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
+        pygame.display.set_caption('Apex Assult')
+        self.clock = pygame.time.Clock()
+        self.font = pygame.font.Font('./font/subatomic.ttf', 50)
+        self.font2 = pygame.font.Font('./font/subatomic.ttf', 30)
+        self.text = self.font.render('Apex Assult', True, (255, 255, 255))
+        self.text_rect = self.text.get_rect(center = (WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2))
+        self.text2 = self.font2.render('Press any key to start', True, (255, 255, 255))
+        self.text2_rect = self.text2.get_rect(center = (WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2 + 100))
+        self.music = pygame.mixer.Sound('./sound/music.mp3')
+        self.music.set_volume(MUSIC_VOLUME)
+        self.music.play(loops = -1)
+        self.run()
+
+    def run(self):
+        while True:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit()
+                if event.type == pygame.KEYDOWN:
+                    return
+            self.display_surface.fill('black')
+            self.display_surface.blit(self.text, self.text_rect)
+            self.display_surface.blit(self.text2, self.text2_rect)
+            pygame.display.update()
+            self.clock.tick(60)
 
 class Game: 
     def __init__(self):
@@ -245,6 +274,10 @@ class Game:
 
 if __name__ == '__main__':
     print('Please edit the settings file before playing.')
+    install_modules(modules)
+    
+    intro = Intro()
+    intro.run()
 
     if AGREE:
         game = Game()
