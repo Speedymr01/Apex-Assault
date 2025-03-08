@@ -2,9 +2,13 @@ import pygame
 import random
 from sprite import Sprite
 from monster import Coffin, Cactus, HybridEnemy
-from settings import PATHS, DIFFICULTY
+from settings import PATHS, DIFFICULTY, WINDOW_WIDTH, WINDOW_HEIGHT
 import math
 import pytmx
+
+# Define custom exception
+class SpawnRectNotFound(Exception):
+    pass
 
 class Spawner(Sprite):
     def __init__(self, pos, groups, collision_sprites, player, create_bullet, enemy_groups, spawn_number):
@@ -46,22 +50,32 @@ class Spawner(Sprite):
             spawn_y = self.rect.centery + distance * math.sin(angle)
             spawn_pos = (spawn_x, spawn_y)
             HybridEnemy(spawn_pos, self.enemy_groups, './graphics/enemy', self.collision_sprites, self.player, self.create_bullet)
-            #
+
     def find_spawn_rect(self):
         tmx_map = pytmx.load_pygame('./data/map.tmx')
-        for obj in tmx_map.objects:
-            if obj.name == 'Spawner':
-                if obj.spawner == self.spawn_number:
-                    spawn_rect = pygame.Rect(obj.x, obj.y, obj.width, obj.height)
-                    return spawn_rect
+        found_rects = []
+        for layer in tmx_map.layers:
+            if layer.name == 'Spawns':
+                for obj in layer:
+                    found_rects.append((obj.spawner, pygame.Rect(obj.x, obj.y, obj.width, obj.height)))
+                    if obj.spawner == self.spawn_number:
+                        spawn_rect = pygame.Rect(obj.x, obj.y, obj.width, obj.height)
+                        print('found spawner rect:', spawn_rect, obj.spawner)
+                        return spawn_rect
+        raise SpawnRectNotFound(f'Spawn rectangle with spawner number {self.spawn_number} not found. Found rects: {found_rects}')
 
     def player_in_spawn_rect(self):
-        return self.spawn_rect.colliderect(self.spawn_rect)
+        if not self.spawn_rect:
+            return False
+        player_in_rect = self.spawn_rect.colliderect(self.player.rect)
+        #print(f'Player rect: {self.player.rect}, Spawn rect: {self.spawn_rect}, Player in rect: {player_in_rect}')
+        return player_in_rect
 
     def update(self, dt):
         current_time = pygame.time.get_ticks()
         if self.player_in_spawn_rect():
             print('player in spawn rectangle')
             if current_time - self.last_spawn_time > self.spawn_cooldown:
+                print('spawning enemy')
                 self.spawn_enemy()
                 self.last_spawn_time = current_time

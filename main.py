@@ -55,32 +55,79 @@ class Intro:
     def __init__(self):
         pygame.init()
         self.display_surface = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
-        pygame.display.set_caption('Apex Assult')
+        pygame.display.set_caption('Apex Assault')
         self.clock = pygame.time.Clock()
         self.font = pygame.font.Font('./font/subatomic.ttf', 50)
-        self.font2 = pygame.font.Font('./font/subatomic.ttf', 30)
-        self.text = self.font.render('Apex Assult', True, (255, 255, 255))
-        self.text_rect = self.text.get_rect(center = (WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2))
-        self.text2 = self.font2.render('Press any key to start', True, (255, 255, 255))
-        self.text2_rect = self.text2.get_rect(center = (WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2 + 100))
         self.music = pygame.mixer.Sound('./sound/music.mp3')
         self.music.set_volume(MUSIC_VOLUME)
-        self.music.play(loops = -1)
+        self.music.play()
+
+        # Skip text
+        self.skip_font = pygame.font.Font('./font/subatomic.ttf', 25)
+        self.skip_text = self.skip_font.render('Press [SPACE] to skip', True, (255, 255, 255))
+        self.skip_text_rect = self.skip_text.get_rect(bottomright=(WINDOW_WIDTH - 20, WINDOW_HEIGHT - 20))
+
+        # Scrolling text
+        self.scroll_text = SCROLLING_TEXT
+        self.scroll_font = pygame.font.Font('./font/subatomic.ttf', 20)
+        self.scroll_speed = 0.38  # Adjusted to allow smooth floating-point scrolling
+        self.scroll_y = WINDOW_HEIGHT  # Initial y position of scrolling text
+        self.final_text_y = WINDOW_HEIGHT
+        self.show_final_text = False
+        self.introing = True
+        self.music_stopped = False
         self.run()
 
     def run(self):
-        while True:
+        while self.introing:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     pygame.quit()
                     sys.exit()
                 if event.type == pygame.KEYDOWN:
-                    return
+                    if event.key == pygame.K_SPACE:
+                        if not self.music_stopped:
+                            self.music.stop()
+                            self.music_stopped = True
+                            self.show_final_text = True
+                            self.final_text_y = WINDOW_HEIGHT / 2 - 130
+                        else:
+                            self.introing = False
+
             self.display_surface.fill('black')
-            self.display_surface.blit(self.text, self.text_rect)
-            self.display_surface.blit(self.text2, self.text2_rect)
+
+            self.display_surface.blit(self.skip_text, self.skip_text_rect)
+
+            # Update and draw scrolling text
+            if not self.show_final_text:
+                self.scroll_y -= self.scroll_speed
+                for i, line in enumerate(self.scroll_text):
+                    scroll_text_surf = self.scroll_font.render(line, True, (255, 255, 255))
+                    scroll_text_rect = scroll_text_surf.get_rect(center=(WINDOW_WIDTH / 2, self.scroll_y + i * 30))
+                    self.display_surface.blit(scroll_text_surf, scroll_text_rect)
+                if self.scroll_y + len(self.scroll_text) * 30 < WINDOW_HEIGHT / 2:
+                    self.show_final_text = True
+            if self.show_final_text:
+                self.final_text_y -= self.scroll_speed
+                final_text_font_small = pygame.font.Font('./font/subatomic.ttf', 30)
+                final_text_font_large = pygame.font.Font('./font/subatomic.ttf', 70)
+                final_text_small = final_text_font_small.render("This is", True, (255, 255, 255))
+                final_text_large = final_text_font_large.render("Apex Assault", True, (255, 255, 255))
+                combat_text = final_text_font_small.render("Combat", True, (255, 255, 255))
+                combat_rect = combat_text.get_rect(center=(WINDOW_WIDTH / 2, self.final_text_y + 130))
+                pygame.draw.rect(self.display_surface, (255, 255, 255), combat_rect.inflate(20, 10), 2)
+                self.display_surface.blit(final_text_small, final_text_small.get_rect(center=(WINDOW_WIDTH / 2, self.final_text_y)))
+                self.display_surface.blit(final_text_large, final_text_large.get_rect(center=(WINDOW_WIDTH / 2, self.final_text_y + 50)))
+                self.display_surface.blit(combat_text, combat_rect)
+
+                if self.final_text_y + 130 <= WINDOW_HEIGHT / 2:
+                    self.final_text_y = WINDOW_HEIGHT / 2 - 130
+
             pygame.display.update()
             self.clock.tick(60)
+
+
+
 
 class Game: 
     def __init__(self):

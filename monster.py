@@ -56,7 +56,7 @@ class Coffin(Entity, Monster):
         self.attack_radius = 50
         self.player.score = 0
 
-    def animate(self,dt):
+    def animate(self, dt):
         current_animation = self.animations[self.status]
 
         if int(self.frame_index) == self.attack_frame and self.attacking:
@@ -70,6 +70,7 @@ class Coffin(Entity, Monster):
                 self.attacking = False
         self.image = current_animation[int(self.frame_index)]
         self.mask = pygame.mask.from_surface(self.image)
+        self.hitbox = self.mask.get_bounding_rects()[0]
 
     def attack(self):
         distance = self.get_player_distance_direction()[0]
@@ -84,7 +85,7 @@ class Coffin(Entity, Monster):
             self.kill()
             self.player.score += 1
 
-    def update(self,dt):
+    def update(self, dt):
         self.face_player()
         self.walk_to_player()
         self.attack()
@@ -113,7 +114,7 @@ class Cactus(Entity, Monster):
         self.bullet_shot = False
         self.health = 1 + DIFFICULTY
     
-    def animate(self,dt):
+    def animate(self, dt):
         current_animation = self.animations[self.status]
 
         if int(self.frame_index) == self.attack_frame and self.attacking and not self.bullet_shot:
@@ -129,6 +130,7 @@ class Cactus(Entity, Monster):
 
         self.image = current_animation[int(self.frame_index)]
         self.mask = pygame.mask.from_surface(self.image)
+        self.hitbox = self.mask.get_bounding_rects()[0]
     
     def check_death(self):
         if self.health <= 0:
@@ -145,7 +147,7 @@ class Cactus(Entity, Monster):
         if self.attacking:
             self.status = self.status.split('_')[0] + '_attack'    
 
-    def update(self,dt):
+    def update(self, dt):
         self.face_player()
         self.walk_to_player()
         self.attack()
@@ -168,7 +170,7 @@ class HybridEnemy(Entity, Monster):
         self.player = player
         self.notice_radius = 600
         self.walk_radius = 500
-        self.attack_radius = 50
+        self.melee_attack_radius = 50
         self.player.score = 0
 
         # bullets
@@ -214,7 +216,6 @@ class HybridEnemy(Entity, Monster):
                 print(f"Skipping frame {i} as it is outside the surface area")
         return frames
 
-
     def animate(self, dt):
         current_animation = self.animations[self.status]
 
@@ -235,16 +236,18 @@ class HybridEnemy(Entity, Monster):
 
         self.image = current_animation[int(self.frame_index)]
         self.mask = pygame.mask.from_surface(self.image)
+        self.hitbox = self.mask.get_bounding_rects()[0]
 
     def attack(self):
         distance = self.get_player_distance_direction()[0]
-        if distance < self.attack_radius and not self.attacking:
+        if distance < self.melee_attack_radius and not self.attacking:
             self.attacking = True
             self.frame_index = 0
             self.bullet_shot = False
             self.shoot_sound.play()
         if self.attacking:
-            self.status = self.status.split('_')[0] + '_attack'
+            if self.get_player_distance_direction()[0] < self.melee_attack_radius:
+                self.status = 'Attack3'
 
     def check_death(self):
         if self.health <= 0:
