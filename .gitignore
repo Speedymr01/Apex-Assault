@@ -1,3 +1,6 @@
 .vscode
 .pytest_cache
 __pycache__
+.te.py
+.test.py
+.test_hybrid_enemy.py

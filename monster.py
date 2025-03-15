@@ -23,20 +23,20 @@ class Monster():
         if distance < self.notice_radius:
             if -0.5 < direction.y < 0.5:
                 if direction.x < 0: # player to the left
-                    self.status = 'left_idle'
+                    self.status = 'Idle'
                 elif direction.x > 0: # player to the right
-                    self.status = 'right_idle'
+                    self.status = 'Idle'
             else:
                 if direction.y < 0: # player to the top
-                    self.status = 'up_idle'
+                    self.status = 'Idle'
                 elif direction.y > 0: # player to the bottom
-                    self.status = 'down_idle'
+                    self.status = 'Idle'
 
     def walk_to_player(self):
         distance, direction = self.get_player_distance_direction()
         if self.attack_radius < distance < self.walk_radius:
             self.direction = direction
-            self.status = self.status.split('_')[0]
+            self.status = 'Walk'
         else:
             self.direction = vector()
 
@@ -186,38 +186,27 @@ class HybridEnemy(Entity, Monster):
         self.frame_index = 0
         self.status = 'Idle'
 
+        # Load projectile image
+        self.projectile_image = pygame.image.load(os.path.join(path, 'Projectile.png')).convert_alpha()
+
     def import_assets(self, path):
         animations = {}
-        for root, _, files in os.walk(path):
-            for file in files:
+        for animation_type in ['Idle', 'Melee', 'Ranged', 'Die', 'Hurt', 'Walk']:
+            animation_path = os.path.join(path, animation_type)
+            frames = []
+            for file in sorted(os.listdir(animation_path), key=lambda x: int(''.join(filter(str.isdigit, x)))):
                 if file.endswith('.png'):
-                    animation_name = file.split('.')[0]
-                    image = pygame.image.load(os.path.join(root, file)).convert_alpha()
-                    image = pygame.transform.scale(image, (int(image.get_width() * 2), int(image.get_height() * 2)))
-                    frames = self.extract_frames(image)
-                    animations[animation_name] = frames
+                    image = pygame.image.load(os.path.join(animation_path, file)).convert_alpha()
+                    frames.append(image)
+            animations[animation_type] = frames
+            print(f"Loaded {len(frames)} frames for {animation_type}")
         return animations
 
-    def extract_frames(self, image):
-        frames = []
-        frame_width, frame_height = 48, 48
-        frame_width = int(frame_width * 2)
-        frame_height = int(frame_height * 2)
-        num_frames = image.get_width() // frame_width
-
-        # Debug print to check dimensions
-        print(f"Image size: {image.get_size()}, Frame size: ({frame_width}, {frame_height}), Num frames: {num_frames}")
-
-        for i in range(num_frames):
-            if (i * frame_width + frame_width <= image.get_width()) and (frame_height <= image.get_height()):
-                frame = image.subsurface((i * frame_width, 0, frame_width, frame_height))
-                frames.append(frame)
-            else:
-                print(f"Skipping frame {i} as it is outside the surface area")
-        return frames
-
     def animate(self, dt):
-        current_animation = self.animations[self.status]
+        current_animation = self.animations.get(self.status, [])
+        if not current_animation:
+            print(f"No animation found for status: {self.status}")
+            return
 
         if int(self.frame_index) == self.attack_frame and self.attacking:
             if self.get_player_distance_direction()[0] < self.attack_radius:
@@ -247,10 +236,13 @@ class HybridEnemy(Entity, Monster):
             self.shoot_sound.play()
         if self.attacking:
             if self.get_player_distance_direction()[0] < self.melee_attack_radius:
-                self.status = 'Attack3'
+                self.status = 'Melee'
+            else:
+                self.status = 'Idle'
 
     def check_death(self):
         if self.health <= 0:
+            self.status = 'Die'
             self.kill()
             self.player.score += 1
 
@@ -263,4 +255,3 @@ class HybridEnemy(Entity, Monster):
         self.check_death()
         self.vulnerability_timer()
         self.blink()
-

@@ -74,7 +74,7 @@ class Spawner(Sprite):
     def update(self, dt):
         current_time = pygame.time.get_ticks()
         if self.player_in_spawn_rect():
-            print('player in spawn rectangle')
+            
             if current_time - self.last_spawn_time > self.spawn_cooldown:
                 print('spawning enemy')
                 self.spawn_enemy()
