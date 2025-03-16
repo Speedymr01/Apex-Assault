@@ -145,7 +145,7 @@ class Game:
         self.monsters = pygame.sprite.Group()
         self.spawners = pygame.sprite.Group()
         
-        self.enemy_groups = [self.obstacles, self.monsters]
+        self.enemy_groups = [self.obstacles, self.monsters, self.all_sprites]
         self.setup()
         self.font = pygame.font.Font('./font/subatomic.ttf', 50)
         #self.music = pygame.mixer.Sound('./sound/music.mp3')

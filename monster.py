@@ -3,6 +3,7 @@ from entity import Entity
 from pygame.math import Vector2 as vector
 from settings import *
 import os
+from os import walk
 
 class Monster():
     def get_player_distance_direction(self):
@@ -188,22 +189,28 @@ class HybridEnemy(Entity, Monster):
 
         # Load projectile image
         self.projectile_image = pygame.image.load(os.path.join(path, 'Projectile.png')).convert_alpha()
+        print(self.animations)
 
     def import_assets(self, path):
-        animations = {}
-        for animation_type in ['Idle', 'Melee', 'Ranged', 'Die', 'Hurt', 'Walk']:
-            animation_path = os.path.join(path, animation_type)
-            frames = []
-            for file in sorted(os.listdir(animation_path), key=lambda x: int(''.join(filter(str.isdigit, x)))):
-                if file.endswith('.png'):
-                    image = pygame.image.load(os.path.join(animation_path, file)).convert_alpha()
-                    frames.append(image)
-            animations[animation_type] = frames
-            print(f"Loaded {len(frames)} frames for {animation_type}")
-        return animations
+        self.animations = {}
+        for index, folder in enumerate(walk(path)):
+            if index == 0:
+                for name in folder[1]:
+                    self.animations[name] = []
+            else:
+                for file_name in sorted(folder[2], key=lambda string: int(''.join(filter(str.isdigit, string)) or 0)):
+                    path = folder[0].replace('\\', '/') + '/' + file_name
+                    surf = pygame.image.load(path).convert_alpha()
+                    surf = pygame.transform.scale(surf, (surf.get_width() * 2, surf.get_height() * 2))  # Scale the image
+                    key = folder[0].split('\\')[1]
+                    self.animations[key].append(surf)
+                    print(f"Loaded {file_name} into {key}")
+        return self.animations
 
     def animate(self, dt):
-        current_animation = self.animations.get(self.status, [])
+        
+        self.status = 'Idle'
+        current_animation = self.animations.get(self.status)
         if not current_animation:
             print(f"No animation found for status: {self.status}")
             return
@@ -224,6 +231,7 @@ class HybridEnemy(Entity, Monster):
                 self.attacking = False
 
         self.image = current_animation[int(self.frame_index)]
+        
         self.mask = pygame.mask.from_surface(self.image)
         self.hitbox = self.mask.get_bounding_rects()[0]
 
@@ -247,8 +255,8 @@ class HybridEnemy(Entity, Monster):
             self.player.score += 1
 
     def update(self, dt):
-        self.face_player()
-        self.walk_to_player()
+        #self.face_player()
+        #self.walk_to_player()
         self.attack()
         self.move(dt)
         self.animate(dt)

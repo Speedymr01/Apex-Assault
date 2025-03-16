@@ -13,9 +13,7 @@ class Entity(pygame.sprite.Sprite):
         self.status = 'Idle'
 
         # Ensure the status key exists in the animations dictionary
-        if self.status not in self.animations:
-            self.status = list(self.animations.keys())[0] if self.animations else 'Idle'
-            print(self.status)
+
         print(self.animations)
         self.image = self.animations[self.status][self.frame_index]    
         self.rect = self.image.get_rect(center=pos)
