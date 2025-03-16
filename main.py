@@ -28,7 +28,7 @@ from player import Player
 from pygame.math import Vector2 as vector
 from pytmx.util_pygame import load_pygame
 from sprite import Sprite, Bullet, Button
-from monster import Coffin, Cactus
+from monster import Coffin, Cactus, HybridEnemy
 import time
 from doors import PistonDoor
 from spawner import Spawner
@@ -153,20 +153,15 @@ class Game:
         #self.music.play(loops = -1)
         
 
-    def create_bullet(self, pos, direction):
-        Bullet(pos, direction, self.bullet_surf, [self.all_sprites, self.bullets], self.player)
+    def create_bullet(self, pos, direction, shooter, bullet_surf):
+        Bullet(pos, direction, bullet_surf, [self.all_sprites, self.bullets], shooter)
 
     def bullet_collision(self):
         for obstacle in self.obstacles.sprites():
             if not isinstance(obstacle, Spawner):
-                pygame.sprite.spritecollide(obstacle, self.bullets, True, pygame.sprite.collide_mask)
-        for bullet in self.bullets.sprites():
-            sprites = pygame.sprite.spritecollide(bullet, self.monsters, False, pygame.sprite.collide_mask)
+                if not isinstance(obstacle, HybridEnemy):
+                    pygame.sprite.spritecollide(obstacle, self.bullets, True, pygame.sprite.collide_mask)
 
-            if sprites:
-                bullet.kill()
-                for sprite in sprites:
-                    sprite.damage()
 
         # Exclude bullets fired by the player when checking for collisions with the player
         for bullet in self.bullets.sprites():
@@ -181,6 +176,17 @@ class Game:
                 if isinstance(spawner, Spawner):
                     bullet.kill()
                     spawner.damage()
+
+        # Handle collisions between bullets and Enemies
+        for bullet in self.bullets.sprites():
+            enemies = pygame.sprite.spritecollide(bullet, self.monsters, False, pygame.sprite.collide_mask)
+            
+            for enemy in enemies:
+                print('hit')
+                if isinstance(enemy, HybridEnemy):
+                    if enemy.is_vulnerable:
+                        bullet.kill()
+                        enemy.damage()
 
     def ammo_display(self):
         Highscore_text = f'{self.player.ammo}/{AMMO}'

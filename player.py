@@ -4,6 +4,7 @@ from pygame.math import Vector2 as vector
 from entity import Entity
 from settings import *
 import sys
+from math import sin
 
 class Player(Entity):
     def __init__(self, pos, groups, path, collision_sprites, create_bullet, display_surf):
@@ -30,7 +31,8 @@ class Player(Entity):
             self.status = list(self.animations.keys())[0] if self.animations else 'Idle'
 
         self.shoot_effect = pygame.image.load('./graphics/other/shooteffect.png').convert_alpha()
-
+        self.bullet_surf = pygame.image.load('./graphics/other/bullet.png').convert_alpha()
+        self.bullet_surf = pygame.transform.scale(self.bullet_surf, (int(self.bullet_surf.get_width() * 2), int(self.bullet_surf.get_height() * 2)))
         # Load shooting images
         self.left_shooting_image = pygame.image.load('./graphics/player/left_shooting.png').convert_alpha()
         self.right_shooting_image = pygame.image.load('./graphics/player/right_shooting.png').convert_alpha()
@@ -63,6 +65,28 @@ class Player(Entity):
                     frames = self.extract_frames(image)
                     animations[animation_name] = frames
         return animations
+
+    def blink(self):
+        if not self.is_vulnerable:
+            if self.wave_value():
+                mask = pygame.mask.from_surface(self.image)
+                white_surf = mask.to_surface()
+                white_surf.set_colorkey((0, 0, 0))
+                self.image = white_surf
+
+    def wave_value(self):
+        value = sin(pygame.time.get_ticks())
+        return value >= 0
+
+    def damage(self):
+        if self.is_vulnerable:
+            self.health -= 1
+            self.is_vulnerable = False
+            self.hit_time = pygame.time.get_ticks()
+            if not self.coffin_damage:
+                self.hit_sound.stop()
+                self.hit_sound.play()
+
 
     def extract_frames(self, image):
         """Extract frames from a sprite sheet image."""
@@ -219,7 +243,7 @@ class Player(Entity):
     def shoot(self):
         """Shoot a bullet in the direction of the mouse cursor."""
         bullet_direction = self.get_mouse_direction()  # Calculate direction at the moment of shooting
-        self.create_bullet(self.rect.center, bullet_direction)
+        self.create_bullet(self.rect.center, bullet_direction, self, self.bullet_surf)  # Pass self as the shooter
 
     def update(self, dt):
         """Update the player's state and handle animations, input, and other actions."""

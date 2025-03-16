@@ -43,7 +43,7 @@ class Spawner(Sprite):
 
     def spawn_enemy(self):
         print('spawning enemy')
-        for _ in range(2):  # Spawn 2 enemies
+        for _ in range(1):  # Spawn 2 enemies
             angle = random.uniform(0, 2 * math.pi)
             distance = random.uniform(0, self.spawn_radius)
             spawn_x = self.rect.centerx + distance * math.cos(angle)

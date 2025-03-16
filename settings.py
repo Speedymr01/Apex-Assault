@@ -59,7 +59,7 @@ SCROLLING_TEXT = [
 # Edit Below
 # Sounds are a value between 0 and 1
 # Difficulty is any number that is at least 1
-DAMAGE_SOUND_VOLUME = 0.5
+DAMAGE_SOUND_VOLUME = 0.9
 SHOOT_SOUND_VOLUME = 0.2
 MUSIC_VOLUME = 1
 DIFFICULTY = 1

@@ -1,4 +1,5 @@
 import pygame
+from pygame.math import Vector2 as vector
 
 class Sprite(pygame.sprite.Sprite):
     def __init__(self, pos, surf, groups):
@@ -12,16 +13,17 @@ class Bullet(pygame.sprite.Sprite):
     def __init__(self, pos, direction, surf, groups, shooter):
         super().__init__(groups)
         self.image = surf
-        self.mask = pygame.mask.from_surface(self.image)
         self.rect = self.image.get_rect(center=pos)
-        self.pos = pygame.math.Vector2(self.rect.center)
-        self.direction = direction
-        self.speed = 1500
-        self.shooter = shooter  # Add shooter attribute
-    
+        self.pos = vector(self.rect.center)
+        self.direction = direction.normalize()
+        self.speed = 400
+        self.shooter = shooter  # Store the reference to the shooter
+
     def update(self, dt):
         self.pos += self.direction * self.speed * dt
-        self.rect.center = (round(self.pos.x), round(self.pos.y))
+        self.rect.center = self.pos
+
+        
 
 class Button(pygame.sprite.Sprite):
     def __init__(self, pos, image_path, groups, door=None):

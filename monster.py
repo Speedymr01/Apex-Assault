@@ -4,6 +4,7 @@ from pygame.math import Vector2 as vector
 from settings import *
 import os
 from os import walk
+import time
 
 class Monster():
     def get_player_distance_direction(self):
@@ -35,7 +36,7 @@ class Monster():
 
     def walk_to_player(self):
         distance, direction = self.get_player_distance_direction()
-        if self.attack_radius < distance < self.walk_radius:
+        if self.ranged_radius < distance < self.walk_radius:
             self.direction = direction
             self.status = 'Walk'
         else:
@@ -173,23 +174,35 @@ class HybridEnemy(Entity, Monster):
         self.walk_radius = 500
         self.melee_attack_radius = 50
         self.player.score = 0
+        self.ranged_radius = 1000
 
         # bullets
         self.create_bullet = create_bullet
         self.bullet_shot = False
+        self.dead = False
 
         # Load sounds
-        self.shoot_sound = pygame.mixer.Sound('./sound/shoot.mp3')
+        self.shoot_sound = pygame.mixer.Sound('./sound/charged_shot.mp3')
         self.shoot_sound.set_volume(SHOOT_SOUND_VOLUME)
+        self.melee_attack_sound = pygame.mixer.Sound('./sound/damage.mp3')
+        self.melee_attack_sound.set_volume(0.1)
 
         # Load animations
         self.animations = self.import_assets(path)
         self.frame_index = 0
         self.status = 'Idle'
+        self.damaging = False
 
         # Load projectile image
         self.projectile_image = pygame.image.load(os.path.join(path, 'Projectile.png')).convert_alpha()
         print(self.animations)
+        
+        # Cooldowns
+        self.melee_cooldown = 5000  # 5 seconds
+        self.ranged_cooldown = 6000  # 6 seconds
+        self.global_cooldown = 2000  # 2 seconds
+        self.last_attack_time = 0
+        self.damage_cooldown = 1000  # 1 second
 
     def import_assets(self, path):
         self.animations = {}
@@ -208,58 +221,108 @@ class HybridEnemy(Entity, Monster):
         return self.animations
 
     def animate(self, dt):
-        
-        self.status = 'Idle'
         current_animation = self.animations.get(self.status)
         if not current_animation:
             print(f"No animation found for status: {self.status}")
             return
 
-        if int(self.frame_index) == self.attack_frame and self.attacking:
-            if self.get_player_distance_direction()[0] < self.attack_radius:
-                self.player.damage()
-            elif not self.bullet_shot:
-                direction = self.get_player_distance_direction()[1]
-                pos = self.rect.center + direction * 150
-                self.create_bullet(pos, direction)
-                self.bullet_shot = True
-
         self.frame_index += 7 * dt
+
+        # Ensure the attack animation completes before switching
+        if self.attacking and self.frame_index >= len(current_animation) - 1:
+            self.attacking = False  # Reset after full animation
+            self.status = 'Idle'
+
         if self.frame_index >= len(current_animation):
-            self.frame_index = 0
-            if self.attacking:
-                self.attacking = False
+            self.frame_index = 0  # Loop idle animations
+        if self.damaging:
+            self.status = 'Hurt'
 
         self.image = current_animation[int(self.frame_index)]
-        
         self.mask = pygame.mask.from_surface(self.image)
         self.hitbox = self.mask.get_bounding_rects()[0]
+        if self.status == 'Die' and self.frame_index == len(current_animation):
+            print('Killing enemy')
+            self.kill()
 
-    def attack(self):
-        distance = self.get_player_distance_direction()[0]
-        if distance < self.melee_attack_radius and not self.attacking:
-            self.attacking = True
-            self.frame_index = 0
-            self.bullet_shot = False
-            self.shoot_sound.play()
-        if self.attacking:
-            if self.get_player_distance_direction()[0] < self.melee_attack_radius:
+    def check_attack(self):
+        """Handles attack decision-making based on player distance, obstructions, and cooldowns."""
+        current_time = pygame.time.get_ticks()
+        distance, direction = self.get_player_distance_direction()
+
+        # Global cooldown check
+        if current_time - self.last_attack_time < self.global_cooldown:
+            return  # Still in cooldown, do nothing
+
+        # Melee Attack (if player is close enough and cooldown is over)
+        if distance < self.melee_attack_radius and (current_time - self.last_attack_time) >= self.melee_cooldown:
+            self.attack('melee')
+            self.last_attack_time = current_time
+            return  # Prioritize melee attack, do not check ranged
+
+        # Ranged Attack (only if no wall blocks the shot)
+        if distance < self.ranged_radius and (current_time - self.last_attack_time) >= self.ranged_cooldown:
+            if not self.is_obstructed(self.rect.center, self.player.rect.center):  
+                self.attack('ranged')
+                self.last_attack_time = current_time
+
+    def attack(self, mode):
+        direction = self.get_player_distance_direction()[1]
+
+        if mode == 'ranged':
+            if not self.attacking:  # Prevent re-triggering mid-animation
+                self.attacking = True
+                self.status = 'Ranged'
+                self.frame_index = 0
+                self.bullet_shot = False
+                self.shoot_sound.play()
+                self.create_bullet(self.rect.center, direction, self, self.projectile_image)
+
+        elif mode == 'melee':
+            if not self.attacking:
+                self.attacking = True
+                self.frame_index = 0
                 self.status = 'Melee'
-            else:
-                self.status = 'Idle'
+                self.melee_attack_sound.play()
+                self.player.damage()
 
     def check_death(self):
-        if self.health <= 0:
+        if self.health <= 0 and not self.dead:
+            self.dead = True
             self.status = 'Die'
-            self.kill()
             self.player.score += 1
 
+    def check_collision_with_obstacles(self):
+        """Check if the enemy hitbox is inside an obstacle and move it 10px left if it is."""
+        for obstacle in self.collision_sprites:
+            if self.hitbox.colliderect(obstacle.rect):
+                self.rect.x -= 1
+                self.hitbox = self.mask.get_bounding_rects()[0]  # Update hitbox position
+
+    def damage(self):
+        if self.is_vulnerable:
+            self.health -= 1
+            self.is_vulnerable = False
+            self.hit_time = pygame.time.get_ticks()
+            self.status = 'Hurt'
+
+    def isdamaging(self):
+        if self.damage_cooldown < pygame.time.get_ticks() - self.hit_time:
+            self.is_vulnerable = True
+            self.status = 'Idle'
+            return True
+        return False
+
     def update(self, dt):
-        #self.face_player()
-        #self.walk_to_player()
-        self.attack()
-        self.move(dt)
+        """Updates the enemy's behavior each frame."""
+        self.face_player()
+        
+        if not self.attacking:  # Only move if not attacking
+            self.walk_to_player()
+            self.move(dt)
+
         self.animate(dt)
+        self.check_attack()  # Attack logic
         self.check_death()
+        self.check_collision_with_obstacles()  # Check collision with obstacles
         self.vulnerability_timer()
-        self.blink()

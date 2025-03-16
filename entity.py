@@ -1,7 +1,6 @@
 import pygame
 from pygame.math import Vector2 as vector
 from os import walk
-from math import sin
 from settings import *
 
 class Entity(pygame.sprite.Sprite):
@@ -44,27 +43,50 @@ class Entity(pygame.sprite.Sprite):
         self.hit_sound.set_volume(DAMAGE_SOUND_VOLUME)
         self.shoot_sound = pygame.mixer.Sound('./sound/shoot.mp3')
         self.shoot_sound.set_volume(SHOOT_SOUND_VOLUME)
+
+    @staticmethod
+    def bresenham(x1, y1, x2, y2):
+        """Generates all points along a line using Bresenham's algorithm."""
+        points = []
+        dx = abs(x2 - x1)
+        dy = abs(y2 - y1)
+        sx = 1 if x1 < x2 else -1
+        sy = 1 if y1 < y2 else -1
+        err = dx - dy
+
+        while True:
+            points.append((x1, y1))
+            if x1 == x2 and y1 == y2:
+                break
+            e2 = err * 2
+            if e2 > -dy:
+                err -= dy
+                x1 += sx
+            if e2 < dx:
+                err += dx
+                y1 += sy
+
+        return points
+
+    def is_obstructed(self, start_pos, end_pos):
+        """
+        Checks if there is an obstruction (wall or solid object) between two positions.
+        """
+        # Correct way to call Bresenham now
+        line_points = list(Entity.bresenham(int(start_pos[0]), int(start_pos[1]), int(end_pos[0]), int(end_pos[1])))
+
+        # Check if any point collides with a wall sprite
+        for point in line_points:
+            for sprite in self.collision_sprites:
+                if sprite.rect.collidepoint(point):  # If any wall covers this point
+                    return True  # Obstruction detected
+
+        return False  # No obstruction
+
     
-    def blink(self):
-        if not self.is_vulnerable:
-            if self.wave_value():
-                mask = pygame.mask.from_surface(self.image)
-                white_surf = mask.to_surface()
-                white_surf.set_colorkey((0, 0, 0))
-                self.image = white_surf
 
-    def wave_value(self):
-        value = sin(pygame.time.get_ticks())
-        return value >= 0
 
-    def damage(self):
-        if self.is_vulnerable:
-            self.health -= 1
-            self.is_vulnerable = False
-            self.hit_time = pygame.time.get_ticks()
-            if not self.coffin_damage:
-                self.hit_sound.stop()
-                self.hit_sound.play()
+
 
     def vulnerability_timer(self):
         if not self.is_vulnerable:
