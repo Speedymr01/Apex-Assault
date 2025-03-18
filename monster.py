@@ -5,6 +5,7 @@ from settings import *
 import os
 from os import walk
 import time
+from math import sin
 
 class Monster():
     def get_player_distance_direction(self):
@@ -220,30 +221,65 @@ class HybridEnemy(Entity, Monster):
                     print(f"Loaded {file_name} into {key}")
         return self.animations
 
+    def blink(self):
+        """Blink effect to indicate damage."""
+        if self.status != 'Die' and not self.is_vulnerable:
+            if self.wave_value():
+                mask = pygame.mask.from_surface(self.image)
+                white_surf = mask.to_surface()
+                white_surf.set_colorkey((0, 0, 0))
+                self.image = white_surf
+
+    def wave_value(self):
+        """Helper method for blinking effect."""
+        value = sin(pygame.time.get_ticks())
+        return value >= 0
+
+    def damage(self):
+        """Apply damage to the enemy and trigger the blink effect."""
+        if self.is_vulnerable:
+            print('Enemy damaged')
+            self.health -= 1
+            self.is_vulnerable = False
+            self.hit_time = pygame.time.get_ticks()
+
     def animate(self, dt):
-        current_animation = self.animations.get(self.status)
-        if not current_animation:
-            print(f"No animation found for status: {self.status}")
-            return
+        """Update animations, excluding the 'Hurt' animation."""
+        if not self.status == 'Die':
+            current_animation = self.animations.get(self.status)
+            if not current_animation:
+                print(f"No animation found for status: {self.status}")
+                return
 
-        self.frame_index += 7 * dt
+            self.frame_index += 7 * dt
 
-        # Ensure the attack animation completes before switching
-        if self.attacking and self.frame_index >= len(current_animation) - 1:
-            self.attacking = False  # Reset after full animation
-            self.status = 'Idle'
+            # Ensure the attack animation completes before switching
+            if self.attacking and self.status == 'Ranged' and int(self.frame_index) == 4 and not self.bullet_shot:
+                direction = self.get_player_distance_direction()[1]
+                self.create_bullet(self.rect.center, direction, self, self.projectile_image)
+                self.bullet_shot = True
 
-        if self.frame_index >= len(current_animation):
-            self.frame_index = 0  # Loop idle animations
-        if self.damaging:
-            self.status = 'Hurt'
+            if self.attacking and self.frame_index >= len(current_animation) - 1:
+                self.attacking = False  # Reset after full animation
+                self.status = 'Idle'
 
-        self.image = current_animation[int(self.frame_index)]
-        self.mask = pygame.mask.from_surface(self.image)
-        self.hitbox = self.mask.get_bounding_rects()[0]
-        if self.status == 'Die' and self.frame_index == len(current_animation):
-            print('Killing enemy')
-            self.kill()
+            if self.frame_index >= len(current_animation):
+                self.frame_index = 0  # Loop idle animations
+
+            self.image = current_animation[int(self.frame_index)]
+            self.mask = pygame.mask.from_surface(self.image)
+            self.hitbox = self.mask.get_bounding_rects()[0]
+        elif self.status == 'Die':
+            current_animation = self.animations.get(self.status)
+            self.frame_index += 7 * dt
+            if self.frame_index >= len(current_animation):
+                print('Killing enemy')
+                self.kill()
+            if self.frame_index >= len(current_animation):
+                self.frame_index = 0  # Loop idle animations
+            self.image = current_animation[int(self.frame_index)]
+            self.mask = pygame.mask.from_surface(self.image)
+            self.hitbox = self.mask.get_bounding_rects()[0]
 
     def check_attack(self):
         """Handles attack decision-making based on player distance, obstructions, and cooldowns."""
@@ -261,8 +297,10 @@ class HybridEnemy(Entity, Monster):
             return  # Prioritize melee attack, do not check ranged
 
         # Ranged Attack (only if no wall blocks the shot)
-        if distance < self.ranged_radius and (current_time - self.last_attack_time) >= self.ranged_cooldown:
+        # Check if player is within ranged attack radius AND outside melee attack radius
+        if self.melee_attack_radius <= distance < self.ranged_radius and (current_time - self.last_attack_time) >= self.ranged_cooldown:
             if not self.is_obstructed(self.rect.center, self.player.rect.center):  
+                print('Ranged attack')
                 self.attack('ranged')
                 self.last_attack_time = current_time
 
@@ -276,7 +314,7 @@ class HybridEnemy(Entity, Monster):
                 self.frame_index = 0
                 self.bullet_shot = False
                 self.shoot_sound.play()
-                self.create_bullet(self.rect.center, direction, self, self.projectile_image)
+                # Projectile will now be created in the animate method on frame 4
 
         elif mode == 'melee':
             if not self.attacking:
@@ -299,13 +337,6 @@ class HybridEnemy(Entity, Monster):
                 self.rect.x -= 1
                 self.hitbox = self.mask.get_bounding_rects()[0]  # Update hitbox position
 
-    def damage(self):
-        if self.is_vulnerable:
-            self.health -= 1
-            self.is_vulnerable = False
-            self.hit_time = pygame.time.get_ticks()
-            self.status = 'Hurt'
-
     def isdamaging(self):
         if self.damage_cooldown < pygame.time.get_ticks() - self.hit_time:
             self.is_vulnerable = True
@@ -315,7 +346,7 @@ class HybridEnemy(Entity, Monster):
 
     def update(self, dt):
         """Updates the enemy's behavior each frame."""
-        self.face_player()
+        
         
         if not self.attacking:  # Only move if not attacking
             self.walk_to_player()
@@ -324,5 +355,5 @@ class HybridEnemy(Entity, Monster):
         self.animate(dt)
         self.check_attack()  # Attack logic
         self.check_death()
-        self.check_collision_with_obstacles()  # Check collision with obstacles
         self.vulnerability_timer()
+        self.blink()

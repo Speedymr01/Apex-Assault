@@ -70,7 +70,7 @@ class Intro:
         # Scrolling text
         self.scroll_text = SCROLLING_TEXT
         self.scroll_font = pygame.font.Font('./font/subatomic.ttf', 20)
-        self.scroll_speed = 0.38  # Adjusted to allow smooth floating-point scrolling
+        self.scroll_speed = 0.25  # Adjusted to allow smooth floating-point scrolling
         self.scroll_y = WINDOW_HEIGHT  # Initial y position of scrolling text
         self.final_text_y = WINDOW_HEIGHT
         self.show_final_text = False
@@ -168,6 +168,8 @@ class Game:
             if bullet.shooter != self.player:
                 if pygame.sprite.spritecollide(self.player, self.bullets, True, pygame.sprite.collide_mask):
                     self.player.damage()
+            if bullet.shooter == self.player:
+                pass
 
         # Handle collisions between bullets and spawners
         for bullet in self.bullets.sprites():
@@ -179,12 +181,12 @@ class Game:
 
         # Handle collisions between bullets and Enemies
         for bullet in self.bullets.sprites():
-            enemies = pygame.sprite.spritecollide(bullet, self.monsters, False, pygame.sprite.collide_mask)
-            
-            for enemy in enemies:
-                print('hit')
-                if isinstance(enemy, HybridEnemy):
-                    if enemy.is_vulnerable:
+            # Exclude bullets fired by enemies from colliding with other enemies
+            if bullet.shooter == self.player:
+                enemies = pygame.sprite.spritecollide(bullet, self.monsters, False, pygame.sprite.collide_mask)
+                for enemy in enemies:
+                    if isinstance(enemy, HybridEnemy):
+                        print('hit')
                         bullet.kill()
                         enemy.damage()
 

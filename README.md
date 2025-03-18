@@ -20,10 +20,10 @@ python main.py
 
 - The project is not finished, below is a list of items that have not been completed yet.
 
-
 ## Vision
 
-- Enemies that spawn in a 3 tile radius of corresponding spawner.
-- Enemies have 2 types of attack, melee and ranged.
+- Enemies have 2 types of attack, melee and ranged. The animation frames for these are in the graphics folder.
 - In the bottom room, the intended mechanic is that both buttons must be pressed to open the next door.
 - In the T hallway only one button (random) will open the door, the other will spawn enemies in the room, and you may die.
+- The intended way to win is to get a key, which appears only when one of the end buttons (the right one) is pressed. This key will open the final door for you to escape.
+- 

@@ -3,6 +3,7 @@ from pygame.math import Vector2 as vector
 from os import walk
 from settings import *
 
+
 class Entity(pygame.sprite.Sprite):
     def __init__(self, pos, groups, path, collision_sprites):
         super().__init__(groups)
@@ -70,23 +71,50 @@ class Entity(pygame.sprite.Sprite):
 
     def is_obstructed(self, start_pos, end_pos):
         """
-        Checks if there is an obstruction (wall or solid object) between two positions.
+        Checks if there is an obstruction (wall, spawner, or door) between two points,
+        excluding the player and other enemies from the collision check.
+
+        Args:
+            start_pos (tuple): The starting position (x, y).
+            end_pos (tuple): The ending position (x, y).
+
+        Returns:
+            bool: True if there is an obstruction, False otherwise.
         """
-        # Correct way to call Bresenham now
-        line_points = list(Entity.bresenham(int(start_pos[0]), int(start_pos[1]), int(end_pos[0]), int(end_pos[1])))
+        # Import HybridEnemy and Player inside the function
+        from monster import HybridEnemy
+        from player import Player
 
-        # Check if any point collides with a wall sprite
-        for point in line_points:
-            for sprite in self.collision_sprites:
-                if sprite.rect.collidepoint(point):  # If any wall covers this point
-                    return True  # Obstruction detected
+        # Create a line from start_pos to end_pos
+        dx = end_pos[0] - start_pos[0]
+        dy = end_pos[1] - start_pos[1]
+        distance = max(abs(dx), abs(dy))  # Use max to ensure diagonal movement is checked
 
-        return False  # No obstruction
+        if distance == 0:
+            return False  # No distance, no obstruction
 
-    
+        # Increment values for checking each point along the line
+        x_increment = dx / distance
+        y_increment = dy / distance
 
+        # Check each point along the line for collisions with obstacles
+        for i in range(int(distance)):
+            x = int(start_pos[0] + i * x_increment)
+            y = int(start_pos[1] + i * y_increment)
+            
+            # Create a small rect at the current point
+            check_rect = pygame.Rect(x - 2, y - 2, 4, 4)  # Small rect to check for collision
 
+            # Check for collision with any obstacle
+            for obstacle in self.collision_sprites:
+                # Exclude player and enemies from the collision check
+                if isinstance(obstacle, HybridEnemy) or isinstance(obstacle, Player):
+                    continue  # Skip this obstacle
 
+                if check_rect.colliderect(obstacle.rect):
+                    return True  # Obstruction found
+
+        return False  # No obstruction found
 
     def vulnerability_timer(self):
         if not self.is_vulnerable:
