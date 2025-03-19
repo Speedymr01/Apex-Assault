@@ -21,13 +21,13 @@ def install_modules(modules):
                 command = f"py -m pip install {module}"
                 os.system(command)
                 print(f"{module} installed successfully.")
-
+install_modules(modules)
 import pygame, sys
 from settings import * 
 from player import Player
 from pygame.math import Vector2 as vector
 from pytmx.util_pygame import load_pygame
-from sprite import Sprite, Bullet, Button
+from sprite import Sprite, Bullet, Button, Key
 from monster import Coffin, Cactus, HybridEnemy
 import time
 from doors import PistonDoor
@@ -233,14 +233,7 @@ class Game:
             Sprite((x * 32, y * 32), surf, [self.all_sprites, self.obstacles])
         
         buttons_layer = tmx_map.get_layer_by_name('Buttons')
-        for obj in buttons_layer:
-            button_image_path = obj.source.replace("..", ".")
-            print(f"Button image path: {button_image_path}")  # Debugging print
-            button = Button((obj.x, obj.y), button_image_path, [self.all_sprites, self.obstacles])
-            button_id = int(obj.properties['door'])
-            if button_id in doors:
-                button.door = doors[button_id][0]  # Assign the first door in the pair to the button
-
+        
         for obj in tmx_map.get_layer_by_name('Entities'):
             if obj.name == 'Player':
                 self.player = Player(
@@ -254,6 +247,19 @@ class Game:
             if obj.name == 'Spawner':
                 spawn_number = obj.properties['spawner']
                 Spawner((obj.x, obj.y), [self.all_sprites, self.obstacles, self.spawners], self.obstacles, self.player, self.create_bullet, self.enemy_groups, spawn_number)
+            if obj.name == 'Key':
+                Key((obj.x, obj.y), [self.all_sprites, self.obstacles], self.player)
+        for obj in buttons_layer:
+            button_image_path = obj.source.replace("..", ".")
+            print(f"Button image path: {button_image_path}")  # Debugging print
+            button_id = int(obj.properties['door'])
+            if button_id == 2:
+                button = Button((obj.x, obj.y), button_image_path, [self.all_sprites, self.obstacles], self.player)
+            else:
+                button = Button((obj.x, obj.y), button_image_path, [self.all_sprites, self.obstacles])
+            if button_id in doors:
+                button.door = doors[button_id][0]  # Assign the first door in the pair to the button
+
 
         self.heart_surf = pygame.image.load('./graphics/other/heart.png').convert_alpha()
         
@@ -329,7 +335,6 @@ class Game:
 
 if __name__ == '__main__':
     print('Please edit the settings file before playing.')
-    install_modules(modules)
     
     intro = Intro()
     intro.run()
