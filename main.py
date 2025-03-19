@@ -152,6 +152,8 @@ class Game:
         #self.music.set_volume(MUSIC_VOLUME)
         #self.music.play(loops = -1)
         
+        self.last_button_press_time = 0  # Initialize the last button press time
+        self.button_cooldown = 500  # Cooldown in milliseconds (0.5 seconds)
 
     def create_bullet(self, pos, direction, shooter, bullet_surf):
         Bullet(pos, direction, bullet_surf, [self.all_sprites, self.bullets], shooter)
@@ -254,7 +256,17 @@ class Game:
             print(f"Button image path: {button_image_path}")  # Debugging print
             button_id = int(obj.properties['door'])
             if button_id == 2:
-                button = Button((obj.x, obj.y), button_image_path, [self.all_sprites, self.obstacles], self.player)
+                print('Button 1')
+                
+                button = Button(
+                    pos=(obj.x, obj.y),
+                    image_path=button_image_path,
+                    groups=[self.all_sprites, self.obstacles],
+                    door=None,
+                    player=self.player,
+                    button_id = button_id
+                )
+                print(button.player)
             else:
                 button = Button((obj.x, obj.y), button_image_path, [self.all_sprites, self.obstacles])
             if button_id in doors:
@@ -279,17 +291,16 @@ class Game:
         time.sleep(5)
 
     def check_button_presses(self):
-        keys = pygame.key.get_pressed()
-        if keys[pygame.K_e]:
-            for button in self.obstacles:
-                if isinstance(button, Button) and self.player.rect.colliderect(button.rect):
-                    if not button.pressed:
-                        print(f"Button pressed at {button.rect.topleft}")
-                        print('yes')
-                        if button.door:
-                            button.door.start_moving()
-                        button.pressed = True
-                        print(f"Door at {button.door.rect.topleft} started moving")
+        current_time = pygame.time.get_ticks()
+        if current_time - self.last_button_press_time > self.button_cooldown:
+            keys = pygame.key.get_pressed()
+            if keys[pygame.K_e]:
+                for button in self.obstacles:
+                    if isinstance(button, Button) and self.player.rect.colliderect(button.rect):
+                        if not button.pressed:
+                            print(f"Button pressed at {button.rect.topleft}")
+                            button.press()
+                            self.last_button_press_time = current_time  # Update the last press time
 
     def run(self):
         while self.player.score != 25:

@@ -15,6 +15,9 @@ class PistonDoor(Sprite):
         self.direction = self.find_direction()
         self.pair = pair  # Add pair attribute
 
+    def set_speed(self, speed):
+        self.speed = speed
+
     def start_moving(self):
         self.moving = True
         print('Moving')
@@ -49,8 +52,6 @@ class PistonDoor(Sprite):
 
             # Update hitbox position
             self.hitbox.topleft = self.rect.topleft
-
-
 
             # Check for collision with walls
             if pygame.sprite.spritecollide(self, walls, False, pygame.sprite.collide_mask):

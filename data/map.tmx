@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.11.0" orientation="orthogonal" renderorder="right-down" width="100" height="100" tilewidth="32" tileheight="32" infinite="0" nextlayerid="13" nextobjectid="162">
+<map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-down" width="100" height="100" tilewidth="32" tileheight="32" infinite="0" nextlayerid="13" nextobjectid="162">
  <tileset firstgid="1" name="TIleset" tilewidth="32" tileheight="32" tilecount="89" columns="0">
   <grid orientation="orthogonal" width="1" height="1"/>
   <tile id="0">
@@ -716,7 +716,7 @@
   <object id="8" name="Player" x="448" y="352">
    <point/>
   </object>
-  <object id="13" name="Key" x="2912" y="1792">
+  <object id="13" name="Key" x="512" y="555.636">
    <point/>
   </object>
   <object id="15" name="Spawner" x="320" y="1824">

@@ -26,33 +26,29 @@ class Bullet(pygame.sprite.Sprite):
         
 
 class Button(pygame.sprite.Sprite):
-    def __init__(self, pos, image_path, groups, door=None, player=None):
+    def __init__(self, pos, image_path, groups, door=None, player=None, button_id=None):
         super().__init__(groups)
         self.image = pygame.image.load(image_path).convert_alpha()
         self.rect = self.image.get_rect(topleft=pos)
-        self.hitbox = self.rect.inflate(0, -self.rect.height / 3)
-        self.mask = pygame.mask.from_surface(self.image)
+        self.hitbox = self.rect.inflate(0, 0)
+        self.door = door
+        self.player = player
         self.pressed = False
-        self.door = door  # Add door attribute
-        self.number = self.extract_number_from_path(image_path)
-        self.player = player  # Reference to the player
-
-    def extract_number_from_path(self, path):
-        # Assuming the number is part of the filename, e.g., "1.png"
-        filename = path.split('/')[-1]
-        number = int(filename.split('.')[0])
-        return number
+        self.button_id = button_id
+        self.sound = pygame.mixer.Sound('./sound/opening.mp3')  # Load the sound
 
     def press(self):
-        if self.number == 2:  # Check if this is button 2
-            if self.player.pickedup_key:  # Check if the player has the key
-                self.pressed = True
-                if self.door:
-                    self.door.open()  # Open the door if linked
-        else:
+        if not self.pressed:
             self.pressed = True
             if self.door:
-                self.door.open()  # Open the door if linked
+                if self.button_id != 2:
+                    self.door.start_moving()
+            if self.button_id == 2:
+                if self.player.pickedup_key:
+                    self.sound.play()  # Play the sound if button_id is 2
+                    self.door.start_moving()
+                else:
+                    self.pressed = False
 
 class Key(pygame.sprite.Sprite):
     def __init__(self, pos, groups, player):
