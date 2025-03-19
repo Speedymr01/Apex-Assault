@@ -20,6 +20,7 @@ class Player(Entity):
         self.score = 0
         self.display_surf = display_surf
         self.flip = False
+        self.pickedup_key = False
 
         # Load animations
         self.animations = self.import_assets(path)
