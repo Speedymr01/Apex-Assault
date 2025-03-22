@@ -27,6 +27,7 @@ class PistonDoor(Sprite):
     def stop_moving(self):
         self.moving = False
         print('Stopped')
+        pygame.mixer.stop()
 
     def find_direction(self):
         if "down" in self.path:

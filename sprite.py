@@ -36,6 +36,7 @@ class Button(pygame.sprite.Sprite):
         self.pressed = False
         self.button_id = button_id
         self.sound = pygame.mixer.Sound('./sound/opening.mp3')  # Load the sound
+        self.deny_sound = pygame.mixer.Sound('./sound/denied.mp3')
 
     def press(self):
         if not self.pressed:
@@ -45,10 +46,16 @@ class Button(pygame.sprite.Sprite):
                     self.door.start_moving()
             if self.button_id == 2:
                 if self.player.pickedup_key:
+                    self.door.speed = 100
+                    self.door.pair.speed = 100
                     self.sound.play()  # Play the sound if button_id is 2
                     self.door.start_moving()
+                    if not self.door.moving:
+                        self.sound.stop()
                 else:
                     self.pressed = False
+                    self.deny_sound.play()
+
 
 class Key(pygame.sprite.Sprite):
     def __init__(self, pos, groups, player):

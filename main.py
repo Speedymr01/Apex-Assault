@@ -303,7 +303,7 @@ class Game:
                             self.last_button_press_time = current_time  # Update the last press time
 
     def run(self):
-        while self.player.score != 25:
+        while not self.player.win:
             # event loop 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
