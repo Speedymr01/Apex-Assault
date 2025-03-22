@@ -1,5 +1,6 @@
 import pygame
 from pygame.math import Vector2 as vector
+import random
 
 class Sprite(pygame.sprite.Sprite):
     def __init__(self, pos, surf, groups):
@@ -37,12 +38,14 @@ class Button(pygame.sprite.Sprite):
         self.button_id = button_id
         self.sound = pygame.mixer.Sound('./sound/opening.mp3')  # Load the sound
         self.deny_sound = pygame.mixer.Sound('./sound/denied.mp3')
+        self.press_count = 0
+        self.random_press = 0
 
     def press(self):
         if not self.pressed:
             self.pressed = True
             if self.door:
-                if self.button_id != 2:
+                if self.button_id != 2 or 6 or 7:
                     self.door.start_moving()
             if self.button_id == 2:
                 if self.player.pickedup_key:
@@ -55,6 +58,21 @@ class Button(pygame.sprite.Sprite):
                 else:
                     self.pressed = False
                     self.deny_sound.play()
+                    
+            if self.button_id == 6:
+                self.press_count += 1
+                if self.press_count == 2:
+                    self.door.start_moving()
+                    self.pressed = True
+
+            if self.button_id == 7:
+                self.random_press = random.randint(0, 1)
+                if self.random_press == 1:
+                    self.door.start_moving()
+                else:
+                    self.deny_sound.play()
+                    self.random_press = 1
+
 
 
 class Key(pygame.sprite.Sprite):

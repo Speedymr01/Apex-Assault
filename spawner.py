@@ -12,14 +12,14 @@ class SpawnRectNotFound(Exception):
 
 class Spawner(Sprite):
     def __init__(self, pos, groups, collision_sprites, player, create_bullet, enemy_groups, spawn_number):
-        image_path = './graphics/other/spawner_.png'
-        surf = pygame.image.load(image_path).convert_alpha()
-        super().__init__(pos, surf, groups)
+        super().__init__(pos, pygame.image.load('./graphics/other/spawner_.png').convert_alpha(), groups)
         self.collision_sprites = collision_sprites
         self.player = player
         self.create_bullet = create_bullet
-        self.frame_index = 0
         self.enemy_groups = enemy_groups
+        self.spawn_number = spawn_number
+
+        # Other initialization code...
         self.frames = [
             pygame.image.load('./graphics/other/spawner_.png').convert_alpha(),
             pygame.image.load('./graphics/other/spawner_x.png').convert_alpha(),
@@ -27,10 +27,10 @@ class Spawner(Sprite):
             pygame.image.load('./graphics/other/spawner_xxx.png').convert_alpha()
         ]
         self.health = 3
-        self.spawn_radius = 100  # Radius around the spawner to spawn enemies
-        self.spawn_cooldown = 5000  # Cooldown in milliseconds
+        self.spawn_radius = 100
+        self.spawn_cooldown = 5000
         self.last_spawn_time = pygame.time.get_ticks()
-        self.spawn_number = spawn_number
+        self.spawned_enemies = []
         self.spawn_rect = self.find_spawn_rect()
 
     def damage(self):
@@ -43,13 +43,30 @@ class Spawner(Sprite):
 
     def spawn_enemy(self):
         print('spawning enemy')
-        for _ in range(1):  # Spawn 2 enemies
+        for _ in range(1):  # Spawn 1 enemy
             angle = random.uniform(0, 2 * math.pi)
             distance = random.uniform(0, self.spawn_radius)
             spawn_x = self.rect.centerx + distance * math.cos(angle)
             spawn_y = self.rect.centery + distance * math.sin(angle)
             spawn_pos = (spawn_x, spawn_y)
-            HybridEnemy(spawn_pos, self.enemy_groups, './graphics/enemy', self.collision_sprites, self.player, self.create_bullet)
+
+            # Create a temporary rect for the enemy to check for collisions
+            temp_enemy = HybridEnemy(spawn_pos, [], './graphics/enemy', self.collision_sprites, self.player, self.create_bullet)
+            temp_enemy_rect = temp_enemy.rect
+
+            # Check if the spawn position collides with any collision object
+            if not pygame.sprite.spritecollide(temp_enemy, self.collision_sprites, False, pygame.sprite.collide_mask):
+                # Spawn the enemy and add it to the spawner's local enemy list
+                new_enemy = HybridEnemy(spawn_pos, self.enemy_groups, './graphics/enemy', self.collision_sprites, self.player, self.create_bullet)
+                self.spawned_enemies.append(new_enemy)
+
+                # Cull the oldest enemy if there are more than 4 in this spawner
+                if len(self.spawned_enemies) > 4:
+                    oldest_enemy = self.spawned_enemies.pop(0)  # Remove the oldest enemy from the local list
+                    oldest_enemy.kill()  # Remove it from the game
+                break  # Exit the loop once a valid enemy is spawned
+            else:
+                print("Spawn position is invalid, retrying...")
 
     def find_spawn_rect(self):
         tmx_map = pytmx.load_pygame('./data/map.tmx')

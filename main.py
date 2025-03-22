@@ -136,8 +136,7 @@ class Game:
         pygame.display.set_caption('Western shooter')
         self.clock = pygame.time.Clock()
         self.bullet_surf = pygame.image.load('./graphics/other/bullet.png').convert_alpha()
-        
-
+    
         # Groups
         self.all_sprites = Allsprites()
         self.obstacles = pygame.sprite.Group()
@@ -154,6 +153,7 @@ class Game:
         
         self.last_button_press_time = 0  # Initialize the last button press time
         self.button_cooldown = 500  # Cooldown in milliseconds (0.5 seconds)
+        self.all_enemies = []  # Global list to track all enemies
 
     def create_bullet(self, pos, direction, shooter, bullet_surf):
         Bullet(pos, direction, bullet_surf, [self.all_sprites, self.bullets], shooter)
@@ -264,6 +264,24 @@ class Game:
                     button_id = button_id
                 )
                 print(button.player)
+            elif button_id == 7:
+                button = Button(
+                    pos=(obj.x, obj.y),
+                    image_path=button_image_path,
+                    groups=[self.all_sprites, self.obstacles],
+                    door=None,
+                    player=self.player,
+                    button_id = button_id
+                )
+            elif button_id == 7:
+                button = Button(
+                    pos=(obj.x, obj.y),
+                    image_path=button_image_path,
+                    groups=[self.all_sprites, self.obstacles],
+                    door=None,
+                    player=self.player,
+                    button_id = button_id
+                )
             else:
                 button = Button((obj.x, obj.y), button_image_path, [self.all_sprites, self.obstacles])
             if button_id in doors:
