@@ -164,14 +164,11 @@ class Game:
                 if not isinstance(obstacle, HybridEnemy):
                     pygame.sprite.spritecollide(obstacle, self.bullets, True, pygame.sprite.collide_mask)
 
-
         # Exclude bullets fired by the player when checking for collisions with the player
         for bullet in self.bullets.sprites():
-            if bullet.shooter != self.player:
-                if pygame.sprite.spritecollide(self.player, self.bullets, True, pygame.sprite.collide_mask):
+            if bullet.shooter != self.player:  # Ensure the bullet was not fired by the player
+                if pygame.sprite.spritecollide(self.player, [bullet], False, pygame.sprite.collide_mask):
                     self.player.damage()
-            if bullet.shooter == self.player:
-                pass
 
         # Handle collisions between bullets and spawners
         for bullet in self.bullets.sprites():
