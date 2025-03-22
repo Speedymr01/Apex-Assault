@@ -32,6 +32,7 @@ class Spawner(Sprite):
         self.last_spawn_time = pygame.time.get_ticks()
         self.spawned_enemies = []
         self.spawn_rect = self.find_spawn_rect()
+        self.frame_index = 0
 
     def damage(self):
         self.health -= 1
@@ -67,6 +68,7 @@ class Spawner(Sprite):
                 break  # Exit the loop once a valid enemy is spawned
             else:
                 print("Spawn position is invalid, retrying...")
+                self.spawn_enemy()  # Retry spawning an enemy
 
     def find_spawn_rect(self):
         tmx_map = pytmx.load_pygame('./data/map.tmx')

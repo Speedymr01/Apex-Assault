@@ -174,7 +174,6 @@ class HybridEnemy(Entity, Monster):
         self.notice_radius = 600
         self.walk_radius = 500
         self.melee_attack_radius = 50
-        self.player.score = 0
         self.ranged_radius = 1000
 
         # bullets

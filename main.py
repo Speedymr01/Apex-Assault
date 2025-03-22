@@ -208,12 +208,15 @@ class Game:
         tmx_map = load_pygame('./data/map.tmx')
         pistons_layer = tmx_map.get_layer_by_name('Pistons')
 
+
+
         doors = {}
         for obj in pistons_layer:
             image_path = obj.source.replace("..", ".")
             print(f"Door image path: {image_path}")  # Debugging print
-            door = PistonDoor((obj.x, obj.y), image_path, [self.all_sprites, self.obstacles])
             door_id = int(obj.properties['door'])
+            door = PistonDoor((obj.x, obj.y), image_path, [self.all_sprites, self.obstacles], door_id=door_id)
+            
             if door_id not in doors:
                 doors[door_id] = []
             doors[door_id].append(door)
@@ -261,7 +264,7 @@ class Game:
                     groups=[self.all_sprites, self.obstacles],
                     door=None,
                     player=self.player,
-                    button_id = button_id
+                    button_id=button_id
                 )
                 print(button.player)
             elif button_id == 7:
@@ -271,16 +274,7 @@ class Game:
                     groups=[self.all_sprites, self.obstacles],
                     door=None,
                     player=self.player,
-                    button_id = button_id
-                )
-            elif button_id == 7:
-                button = Button(
-                    pos=(obj.x, obj.y),
-                    image_path=button_image_path,
-                    groups=[self.all_sprites, self.obstacles],
-                    door=None,
-                    player=self.player,
-                    button_id = button_id
+                    button_id=button_id
                 )
             else:
                 button = Button((obj.x, obj.y), button_image_path, [self.all_sprites, self.obstacles])

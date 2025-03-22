@@ -6,6 +6,7 @@ class Sprite(pygame.sprite.Sprite):
     def __init__(self, pos, surf, groups):
         super().__init__(groups)
         self.image = surf
+        
         self.rect = self.image.get_rect(topleft=pos)
         self.hitbox = self.rect.inflate(0, -self.rect.height / 3)
         self.mask = pygame.mask.from_surface(self.image)
@@ -27,6 +28,9 @@ class Bullet(pygame.sprite.Sprite):
         
 
 class Button(pygame.sprite.Sprite):
+    # Shared state for buttons with the same ID
+    button_states = {}
+
     def __init__(self, pos, image_path, groups, door=None, player=None, button_id=None):
         super().__init__(groups)
         self.image = pygame.image.load(image_path).convert_alpha()
@@ -38,15 +42,33 @@ class Button(pygame.sprite.Sprite):
         self.button_id = button_id
         self.sound = pygame.mixer.Sound('./sound/opening.mp3')  # Load the sound
         self.deny_sound = pygame.mixer.Sound('./sound/denied.mp3')
-        self.press_count = 0
-        self.random_press = 0
+
+        # Initialize the shared state for this button ID
+        if self.button_id not in Button.button_states:
+            Button.button_states[self.button_id] = 0  # Track how many buttons with this ID are pressed
+        Button.random_pressed = False
+        
+
 
     def press(self):
         if not self.pressed:
             self.pressed = True
-            if self.door:
-                if self.button_id != 2 or 6 or 7:
+            if self.button_id == 6:
+                # Increment the shared state for button ID 6
+                Button.button_states[self.button_id] += 1
+
+                # Check if all buttons with ID 6 are pressed
+                if Button.button_states[self.button_id] == 2:  # Assuming there are 2 buttons with ID 6
                     self.door.start_moving()
+                    self.sound.play()
+            elif self.button_id == 7:
+                # Start moving the connected door(s)
+                if self.door:
+                    self.door.start_moving()
+            else:
+                if self.door:
+                    self.door.start_moving()
+
             if self.button_id == 2:
                 if self.player.pickedup_key:
                     self.door.speed = 100
@@ -58,20 +80,6 @@ class Button(pygame.sprite.Sprite):
                 else:
                     self.pressed = False
                     self.deny_sound.play()
-                    
-            if self.button_id == 6:
-                self.press_count += 1
-                if self.press_count == 2:
-                    self.door.start_moving()
-                    self.pressed = True
-
-            if self.button_id == 7:
-                self.random_press = random.randint(0, 1)
-                if self.random_press == 1:
-                    self.door.start_moving()
-                else:
-                    self.deny_sound.play()
-                    self.random_press = 1
 
 
 

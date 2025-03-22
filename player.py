@@ -27,6 +27,7 @@ class Player(Entity):
         self.animations = self.import_assets(path)
         self.frame_index = 0
         self.status = 'Walk'
+        self.speed = 250
 
         # Ensure the status key exists in the animations dictionary
         if self.status not in self.animations:
