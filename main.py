@@ -341,6 +341,8 @@ class Game:
             self.player.draw(self.display_surface)
             if self.player.reloading:
                 self.Reload_display()
+            if self.player.pos.x <= 0 or self.player.pos.y <= 0:
+                self.player.win = True
             pygame.display.update()
         self.display_win()
 
