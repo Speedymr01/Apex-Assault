@@ -292,17 +292,19 @@ class HybridEnemy(Entity, Monster):
 
         # Melee Attack (if player is close enough and cooldown is over)
         if distance < self.melee_attack_radius and (current_time - self.last_attack_time) >= self.melee_cooldown:
-            self.attack('melee')
-            self.last_attack_time = current_time
-            return  # Prioritize melee attack, do not check ranged
+            if not self.dead:
+                self.attack('melee')
+                self.last_attack_time = current_time
+                return  # Prioritize melee attack, do not check ranged
 
         # Ranged Attack (only if no wall blocks the shot)
         # Check if player is within ranged attack radius AND outside melee attack radius
         if self.melee_attack_radius <= distance < self.ranged_radius and (current_time - self.last_attack_time) >= self.ranged_cooldown:
             if not self.is_obstructed(self.rect.center, self.player.rect.center):  
-                print('Ranged attack')
-                self.attack('ranged')
-                self.last_attack_time = current_time
+                if not self.dead:
+                    print('Ranged attack')
+                    self.attack('ranged')
+                    self.last_attack_time = current_time
 
     def attack(self, mode):
         direction = self.get_player_distance_direction()[1]
