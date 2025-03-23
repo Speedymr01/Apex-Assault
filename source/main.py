@@ -133,7 +133,7 @@ class Game:
     def __init__(self):
         pygame.init()
         self.display_surface = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
-        pygame.display.set_caption('Western shooter')
+        pygame.display.set_caption('Apex Assault')
         self.clock = pygame.time.Clock()
         self.bullet_surf = pygame.image.load('./graphics/other/bullet.png').convert_alpha()
     
