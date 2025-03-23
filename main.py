@@ -236,7 +236,7 @@ class Game:
         
         buttons_layer = tmx_map.get_layer_by_name('Buttons')
         
-        for obj in tmx_map.get_layer_by_name('Entities'):
+        for obj in tmx_map.get_layer_by_name('Entities'): 
             if obj.name == 'Player':
                 self.player = Player(
                     pos=(obj.x, obj.y),
@@ -249,8 +249,7 @@ class Game:
             if obj.name == 'Spawner':
                 spawn_number = obj.properties['spawner']
                 Spawner((obj.x, obj.y), [self.all_sprites, self.obstacles, self.spawners], self.obstacles, self.player, self.create_bullet, self.enemy_groups, spawn_number)
-            if obj.name == 'Key':
-                Key((obj.x, obj.y), [self.all_sprites, self.obstacles], self.player)
+
         for obj in buttons_layer:
             button_image_path = obj.source.replace("..", ".")
             print(f"Button image path: {button_image_path}")  # Debugging print
@@ -312,8 +311,10 @@ class Game:
                             self.last_button_press_time = current_time  # Update the last press time
 
     def run(self):
+        key_spawned = False  # Track whether the key has been spawned
+
         while not self.player.win:
-            # event loop 
+            # Event loop
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     pygame.quit()
@@ -328,24 +329,36 @@ class Game:
                     sprite.update(dt, self.walls)
             self.bullet_collision()
             self.check_button_presses()
+
+            # Check if all spawners are destroyed and spawn the key
+            if not self.spawners and not key_spawned:
+                print("No spawners left. Spawning the key.")
+                tmx_map = load_pygame('./data/map.tmx')
+                for layer in tmx_map.layers:
+                    if layer.name == 'Entities':
+                        for obj in layer:
+                            if obj.name == 'Key':
+                                Key((obj.x, obj.y), [self.all_sprites, self.obstacles], self.player)
+                                key_spawned = True
+                                break
+
             # Draw
             self.display_surface.fill('black')
-            
             self.all_sprites.customize_draw(self.player)
 
             Highscore_text = f'Score: {self.player.score}'
             text_surf = self.font.render(Highscore_text, True, (255, 255, 255))
-            text_rect = text_surf.get_rect(midbottom = (WINDOW_WIDTH / 4 , WINDOW_HEIGHT - 50))
+            text_rect = text_surf.get_rect(midbottom=(WINDOW_WIDTH / 4, WINDOW_HEIGHT - 50))
             self.display_surface.blit(text_surf, text_rect)
-            pygame.draw.rect(self.display_surface, (255, 255, 255), text_rect.inflate(30, 30), width = 8, border_radius = 5)
-            
-            if self.player.health >= 1:    
+            pygame.draw.rect(self.display_surface, (255, 255, 255), text_rect.inflate(30, 30), width=8, border_radius=5)
+
+            if self.player.health >= 1:
                 self.display_surface.blit(self.heart_surf, ((WINDOW_WIDTH / 60) + 200, WINDOW_HEIGHT / 90))
             if self.player.health >= 2:
                 self.display_surface.blit(self.heart_surf, ((WINDOW_WIDTH / 60) + 100, WINDOW_HEIGHT / 90))
             if self.player.health >= 3:
                 self.display_surface.blit(self.heart_surf, (WINDOW_WIDTH / 60, WINDOW_HEIGHT / 90))
-            
+
             self.ammo_display()
             self.player.draw(self.display_surface)
             if self.player.reloading:
@@ -353,6 +366,7 @@ class Game:
             if self.player.pos.x <= 0 or self.player.pos.y <= 0:
                 self.player.win = True
             pygame.display.update()
+
         self.display_win()
 
 if __name__ == '__main__':

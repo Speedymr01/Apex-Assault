@@ -146,7 +146,6 @@ class Cactus(Entity, Monster):
             self.attacking = True
             self.frame_index = 0
             self.bullet_shot = False
-            self.shoot_sound.play()
         if self.attacking:
             self.status = self.status.split('_')[0] + '_attack'    
 
@@ -256,6 +255,7 @@ class HybridEnemy(Entity, Monster):
             if self.attacking and self.status == 'Ranged' and int(self.frame_index) == 4 and not self.bullet_shot:
                 direction = self.get_player_distance_direction()[1]
                 self.create_bullet(self.rect.center, direction, self, self.projectile_image)
+                self.shoot_sound.play()
                 self.bullet_shot = True
 
             if self.attacking and self.frame_index >= len(current_animation) - 1:
@@ -314,7 +314,7 @@ class HybridEnemy(Entity, Monster):
                 self.status = 'Ranged'
                 self.frame_index = 0
                 self.bullet_shot = False
-                self.shoot_sound.play()
+                
                 # Projectile will now be created in the animate method on frame 4
 
         elif mode == 'melee':

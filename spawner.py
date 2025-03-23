@@ -1,6 +1,6 @@
 import pygame
 import random
-from sprite import Sprite
+from sprite import Sprite, Key
 from monster import Coffin, Cactus, HybridEnemy
 from settings import PATHS, DIFFICULTY, WINDOW_WIDTH, WINDOW_HEIGHT
 import math
@@ -33,6 +33,9 @@ class Spawner(Sprite):
         self.spawned_enemies = []
         self.spawn_rect = self.find_spawn_rect()
         self.frame_index = 0
+        Spawner.all_spawners = pygame.sprite.Group()
+        Spawner.all_spawners.add(self)
+
 
     def damage(self):
         self.health -= 1
@@ -87,7 +90,6 @@ class Spawner(Sprite):
         if not self.spawn_rect:
             return False
         player_in_rect = self.spawn_rect.colliderect(self.player.rect)
-        #print(f'Player rect: {self.player.rect}, Spawn rect: {self.spawn_rect}, Player in rect: {player_in_rect}')
         return player_in_rect
 
     def update(self, dt):
@@ -98,3 +100,4 @@ class Spawner(Sprite):
                 print('spawning enemy')
                 self.spawn_enemy()
                 self.last_spawn_time = current_time
+

@@ -41,6 +41,7 @@ SCROLLING_TEXT = [
             "Use WASD to move, stay agile, never stop.",
             "Use the mouse to aim and shoot. Every bullet counts.",
             "Press R to reload. A second too late could mean death.",
+            "Destroy all spawning machines to unlock the exit.",
             "",
             "The second trial is infiltration.",
             "The Syndicate does not tolerate infiltrators.",
