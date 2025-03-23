@@ -5,3 +5,4 @@ __pycache__
 .test.py
 .test_hybrid_enemy.py
 build
+dist
