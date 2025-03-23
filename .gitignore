@@ -6,3 +6,4 @@ __pycache__
 .test_hybrid_enemy.py
 build
 dist
+release.zip
